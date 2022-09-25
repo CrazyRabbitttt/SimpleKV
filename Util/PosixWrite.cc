@@ -56,7 +56,15 @@ Status PosixWritableFile::Flush()  {
 
 
 Status PosixWritableFile::Sync() {
-    // do nothing, haha
-    return Status::OK();
+
+    // 刷盘目录？
+    Status status = SyncDirIfManifest();
+    if (!status.ok()) return status;
+
+    // buffer -> core buffer 
+    status = FlushBuffer();
+    if (!status.ok()) return status;
+
+    return SyncFd(fd_, filename_);
 }
 

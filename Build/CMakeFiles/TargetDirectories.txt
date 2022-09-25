@@ -1,0 +1,3 @@
+/root/Xindb/Build/CMakeFiles/rebuild_cache.dir
+/root/Xindb/Build/CMakeFiles/Xindb.dir
+/root/Xindb/Build/CMakeFiles/edit_cache.dir

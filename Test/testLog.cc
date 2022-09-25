@@ -9,7 +9,7 @@ using namespace xindb::Log;
 
 int main(int argc, char** argv) {
 
-    char* filename = "testLog";
+    char* filename = "MANIFEST_testLog";
     int fd = open(filename, O_RDWR);            // 按照能够进行读写的方式打开文件
 
     PosixWritableFile dest(std::string(filename), fd);
@@ -20,8 +20,13 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < 20; i++) {
         Slice tmpslice(std::string('a'+ i, 4));
+        Slice tmp("lovebing");
         writer.AddRecord(tmpslice);             // 将数据写到文件中去
+        writer.AddRecord(tmp);
     }
+
+    dest.Sync();
+
 
     printf("The end of the testing of Logfile\n");
     return 0;
