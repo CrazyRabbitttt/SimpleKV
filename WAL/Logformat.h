@@ -17,7 +17,7 @@ enum RecordType {
 
 static const int kMaxRecordType = kLastType;
 
-static const int kBlockSize = 32 * 1024;
+static const int kBlockSize = 32 ;
 
 // 直接不写crc checkSum 好了， Length(2 KB), RecordType(1 KB)
 static const int kHeaderSize = 2 + 1;       

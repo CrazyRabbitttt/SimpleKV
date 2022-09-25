@@ -1,1 +1,0 @@
-g++  -g -Wall -std=c++11  -rdynamic CMakeFiles/Xindb.dir/Util/Coding.cc.o CMakeFiles/Xindb.dir/Util/PosixRead.cc.o CMakeFiles/Xindb.dir/Util/PosixWrite.cc.o CMakeFiles/Xindb.dir/Util/Status.cc.o CMakeFiles/Xindb.dir/WAL/Log_writer.cc.o CMakeFiles/Xindb.dir/Test/testLog.cc.o  -o ../Xindb 
