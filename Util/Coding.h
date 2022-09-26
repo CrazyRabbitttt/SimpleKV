@@ -28,7 +28,7 @@ void PutLengthPrefixedSlice(std::string* dst, const Slice& value);
 
 bool GetVarint32(Slice* input, uint32_t* value);
 bool GetVarint64(Slice* input, uint64_t* value);
-bool GetLengthPrefixedSlice(Slice* input, Slice* result);
+// bool GetLengthPrefixedSlice(Slice* input, Slice* result);
 
 const char* GetVarint32Ptr(const char* p, const char* limit, uint32_t* v);
 const char* GetVarint64Ptr(const char* p, const char* limit, uint64_t* v);

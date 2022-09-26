@@ -26,12 +26,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 aux_source_directory(Base SRC_LIST1)
 aux_source_directory(Util SRC_LIST2)
 aux_source_directory(WAL  SRC_LIST3)
-aux_source_directory(Mem  SRC_LIST4)
+aux_source_directory(MemTable  SRC_LIST4)
 aux_source_directory(Test SRC_LIST5)
 
 # 当前目录
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
-add_executable(TestSkipList ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5})
+# add_executable(TestSkipList ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5})
+add_executable(TestMemTable ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5})
 
 target_link_libraries(${PROJECT_NAME}  ${CMAKE_THREAD_LIBS_INIT})
 

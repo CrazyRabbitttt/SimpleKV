@@ -11,14 +11,14 @@
 
 namespace xindb {
 
-template<typename Key, class Comparatpr>
+template<typename Key, class Comparator>
 class SkipList {
 private:
     struct Node;            //内部的node类
 
 public:
     //跳表需要有一个用于比较的类， 和内存的分配器
-    explicit SkipList(Comparatpr cmp, Arena* arena);
+    explicit SkipList(Comparator cmp, Arena* arena);
 
     //Refuse copy behavior 
     SkipList(const SkipList&) = delete;
@@ -90,7 +90,7 @@ private:
 
 
 //Varaiable 
-    Comparatpr const compare_;
+    Comparator const compare_;
 
     Arena* const arena_;        //用于进行node的内存的分配
 

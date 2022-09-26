@@ -104,8 +104,37 @@ void testSkip() {
     printf("There are three tests, pass grade %d / 3\n", grade);
 }
 
-int main() {
-    testSkip();
 
-    return 0;
+void testIterator() {
+    printf("Begin running test iterator...\n");
+  SkipList<const Key, ByteCom>::Iterator iter(&table);
+  if (iter.Valid()) printf("error, init iter should not valid\n");
+  int grade = 0;
+  iter.Seek(99);
+  assert(iter.Valid());
+  const Key& tmpkey1 = iter.key();
+  if (tmpkey1 == 99) grade++;
+//   printf("The first key which after 99 : %d\n", tmpkey1);
+
+  iter.SeekForFirst();
+  const Key& tmpkey2 = iter.key();
+//   printf("The first key : %d\n", tmpkey2);
+  if (tmpkey2 == 50) grade++;
+ 
+  iter.SeekForLast();
+  const Key& tmpkey3 = iter.key();
+//   printf("The last key : %d\n", tmpkey3);
+  if (tmpkey3 == 150) grade++;
+  
+  printf("There are three tests, pass grade %d / 3\n", grade);
+
 }
+
+
+
+// int main() {
+//     testSkip();
+//     testIterator();
+
+//     return 0;
+// }
