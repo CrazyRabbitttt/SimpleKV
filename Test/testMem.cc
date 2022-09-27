@@ -21,6 +21,12 @@ void func() {
     printf("Should hit [25, 54]\n");
 
     for (int i = 25; i < 55; i++) {
+        if (i == 44) {
+            std::string tmp = std::to_string(i);
+            std::string tmpvalue = tmp + "val" + std::to_string(i);
+            mem.Add(i, kTypeDeletion, tmp, tmpvalue);
+            continue;
+        }
         std::string tmp = std::to_string(i);
         std::string tmpvalue = tmp + "val" + std::to_string(i);
         mem.Add(i, kTypeValue, tmp, tmpvalue);
@@ -33,9 +39,9 @@ void func() {
         std::string value;
         bool r = mem.Get(tmpkey, &value, &status);  
         if (!r) { 
-            printf("Mem table Get Error, key:%2d\n", i); 
+            printf("Mem table Get Error, key:%2d, value : %s\n", i, value.c_str()); 
         } else {
-            printf("Hit the key & value, key:%2d\n", i);
+            printf("Hit the key & value, key:%2d, value : %s\n", i, value.c_str());
         }
     }
 }
