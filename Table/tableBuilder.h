@@ -7,8 +7,9 @@
 
 namespace xindb {
 
+class BlockBuilder;
 class WritableFile;
-
+class BlockHandle;
 // class to build table ?
 class TableBuilder {
 
@@ -20,8 +21,9 @@ class TableBuilder {
 
  private:
 
-    
-
+    // 具体的将block写入到磁盘上面
+    void WriteBlock(BlockBuilder* block, BlockHandle* handle);
+        
     struct Rep;
     Rep* rep_;
 };

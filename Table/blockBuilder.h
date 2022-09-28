@@ -39,9 +39,6 @@ class BlockBuilder {
     int counter_;                               // entry的数目
     bool finished_;                             // 是否调用了Finish()
     std::string last_key_;
-
-
-
 };
 
 
