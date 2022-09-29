@@ -10,14 +10,21 @@ namespace xindb {
 class BlockBuilder;
 class WritableFile;
 class BlockHandle;
-// class to build table ?
+
 class TableBuilder {
 
  public:
     TableBuilder(const Options& options, WritableFile* file);
-
+   
+    // no copy
     TableBuilder(const TableBuilder&) = delete;
     TableBuilder& operator=(const TableBuilder&) = delete;
+
+    ~TableBuilder();
+
+    void Add(const Slice& key, const Slice& value);
+
+    void Flush();
 
  private:
 
