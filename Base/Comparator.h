@@ -18,8 +18,8 @@ class Comparator {
 
     virtual const char* Name() const = 0;    
     
-    //[start, limit)之间的一个短的串， 降低存储的空间
-    // virtual void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
+    // [start, limit)之间的一个短的串， 用于标识DataBlock 的边界，在写 IndexBlock 的时候创建
+    virtual void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
 
     //没有上端的限制
     // virtual void FindShortSuccessor(std::string* key) const = 0;
@@ -47,7 +47,7 @@ class ByteWiseComparator : public Comparator{
         return a.compare(b);
     }
 
-    // 没有写FindShort啥的
+    void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
     
 };
 

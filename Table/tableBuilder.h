@@ -22,13 +22,18 @@ class TableBuilder {
 
     ~TableBuilder();
 
+    // 操作的状态
+    Status status() const;
+
     void Add(const Slice& key, const Slice& value);
 
     void Flush();
 
+    bool ok() const { return status().ok(); }
+
  private:
 
-    // 具体的将block写入到磁盘上面
+    // 具体的将block写入到磁盘上面, 序列化需要写入的 DataBlock
     void WriteBlock(BlockBuilder* block, BlockHandle* handle);
         
     struct Rep;

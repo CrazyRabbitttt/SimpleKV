@@ -3,8 +3,23 @@
 
 namespace xindb {
 
-
-
+// 找到(start, limit) 之间的比较短的字符串赋值给 start，用于标识 DataBlock 的边界
+void ByteWiseComparator::FindShortestSeparator(std::string* start, const Slice& limit) const {
+    int min_len = std::min(start->size(), limit.size());
+    int commom_pre = 0;
+    // 获得前缀长度
+    while (commom_pre < min_len && (*start)[commom_pre] == limit[commom_pre]) commom_pre++;
+    if (commom_pre == min_len) {
+        // 某个字符串是另一个的子字符串，
+    } else {
+        uint8_t diff_byte = static_cast<uint8_t>((*start)[commom_pre]);         // 不同的那个char
+        if (diff_byte < static_cast<uint8_t>(0xff) && diff_byte + 1 < static_cast<uint8_t>(limit[commom_pre])) {
+            (*start)[commom_pre]++;
+            start->resize(commom_pre + 1);
+            assert(Compare(*start, limit) < 0);
+        }
+    }
+}   
 
 }   // namespace xindb
 
