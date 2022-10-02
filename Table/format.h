@@ -55,6 +55,10 @@ class Footer {
    BlockHandle index_handle_; 
 }; 
 
+// datablock 的最后面的位置， type + crc32 
+static const size_t kBlockTrailerSize = 5;
+
+
 // 魔数
 static const uint64_t kTableMagicNumber = 0xdb4775248b80fb57ull;
 

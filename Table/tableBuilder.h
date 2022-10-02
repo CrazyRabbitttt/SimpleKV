@@ -31,7 +31,11 @@ class TableBuilder {
 
     bool ok() const { return status().ok(); }
 
+    Status Finish();
+
  private:
+
+    void WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle);
 
     // 具体的将block写入到磁盘上面, 序列化需要写入的 DataBlock
     void WriteBlock(BlockBuilder* block, BlockHandle* handle);

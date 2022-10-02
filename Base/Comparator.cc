@@ -21,5 +21,21 @@ void ByteWiseComparator::FindShortestSeparator(std::string* start, const Slice& 
     }
 }   
 
+
+// 没有上端的限制，找到下一个比他大的但是很短的数值用于最后的标识 indexBlock
+void ByteWiseComparator::FindShortSuccessor(std::string* key) const  {
+        //Find first 
+        size_t n = key->size();
+        for (int i = 0; i < n; i++) {
+            const uint8_t byte = (*key)[i];
+            if (byte != static_cast<uint8_t>(0xff)) {
+                (*key)[i] = byte + 1;
+                key->resize(i + 1);
+                return;
+            }
+        }   
+    }
+
+
 }   // namespace xindb
 

@@ -22,7 +22,7 @@ class Comparator {
     virtual void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
 
     //没有上端的限制
-    // virtual void FindShortSuccessor(std::string* key) const = 0;
+    virtual void FindShortSuccessor(std::string* key) const = 0;
 
 };
 
@@ -49,6 +49,7 @@ class ByteWiseComparator : public Comparator{
 
     void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
     
+    void FindShortSuccessor(std::string* key) const = 0; 
 };
 
 

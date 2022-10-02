@@ -1,11 +1,17 @@
 #include "tableBuilder.h"
+
 #include "filterBlock.h"
 #include "Options.h"
 #include "blockBuilder.h"
 #include "Comparator.h"
+#include "Filter.h"
 #include "format.h"
+#include "CrcChecksum.h"
+#include "Coding.h"
+#include "PosixWrite.h"
 
 using namespace xindb;
+using namespace xindb::tinycrc;
 
 // tableBuilder中保存着所有的变量
 struct TableBuilder::Rep {
@@ -104,11 +110,144 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     // 如果说 DataBlock Size 达到阈值了那么 就Flush
     const size_t etsimated_block_size = r->data_block_.CurrentSizeEstimate();
     if (etsimated_block_size >= r->options_.block_size) {
-
+        Flush();
     }
 }
 
-// 能够对于 DataBlock 进行压缩，生成 BlockHandle
-void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
-    
+
+// 结束 DataBlock 的构建， 当 DataBlock 的数据预估大小超过了Size, 就 Flush 
+void TableBuilder::Flush() {
+    Rep* r = rep_;
+    assert(!r->closed_);
+    if (!ok()) return ;
+    if (r->data_block_.empty()) return ;
+    assert(!r->pending_index_entry_);       // 不是写 IndexBlock 的时机
+
+    // 对于 DataBlock 压缩， 生成 Block Handle
+    WriteBlock(&r->data_block_, &r->pending_handle_);
+    if (ok()) {
+        // 设置一下 下次就是写 IndexBlock 了
+        r->pending_index_entry_ = true;
+        r->status_ = r->file_->Flush();         // 刷盘
+    }
+
+    // 创建 MetaBlock 
+    if (r->filter_block_ != nullptr) {
+        r->filter_block_->StartBlock(r->offset_);           // 传入的是 DataBlock 的offset
+    }
 }
+
+// 具体的 存储数据，能够用 Snappy 进行压缩，但是这里不进行压缩
+void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
+    Rep* r = rep_;
+
+    // 获得 DataBlock 的数据
+    Slice rawdata = block->Finish();
+    Slice block_contents;
+
+    // 默认不进行压缩
+    CompressType type = r->options_.compression;
+
+    switch (type) {
+        case kNoCompression:
+            block_contents = rawdata;
+            break;
+        case kSnappyCompress: {
+            // 没有支持 snappy 的压缩
+            break;
+        }
+    }
+
+    // 真正的写入数据
+    WritaRawBlock(block_contents, type, handle);
+
+    // 清空一些数据，用于标识下一个 datablock
+    r->compressed_output_.clear();
+    block->Reset();
+}
+
+// 具体的将 DataBlock 写入到磁盘中去
+void TableBuilder::WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle) {
+    Rep* r = rep_;
+    // 设置 Handle 的值
+    handle->set_offset(r->offset_);
+    handle->set_size(block_contents.size());
+
+    r->status_ = r->file_->Append(block_contents);
+    if (r->status_.ok()) {
+        // 将 Crc, Type 啥的加到尾巴的后面
+        char trailter[80];
+        trailter[0] = type;
+        uint32_t crc = crc32(block_contents.data(), block_contents.size());
+        EncodeFixed32(trailter + 1, crc);
+        r->status_ = r->file_->Append(Slice(trailter, kBlockTrailerSize));
+        if (r->status_.ok()) {
+            r->offset_ += block_contents.size() + kBlockTrailerSize;
+        }
+    }
+}
+
+// SST 最终的结尾
+Status TableBuilder::Finish() {
+    Rep* r = rep_;
+
+    // 将最后的 DataBlock 写进去
+    Flush();
+    assert(!r->closed_); r->closed_ = true;
+    BlockHandle filterblock_handle, metaindexblock_handle, indexblock_handle;
+
+    // 1.写 FilterBlock
+    if (ok() && r->filter_block_ != nullptr) {
+        // 将 filter block 的数据写到磁盘, 填充 handle 
+        WritaRawBlock(r->filter_block_->Finish(), kNoCompression, &filterblock_handle);
+    }
+
+    // 2. 写 MetaIndexBlock
+    if (ok()) {
+        BlockBuilder meta_index_block(&r->options_);
+        if (r->filter_block_ != nullptr) {
+            // Key <====> handle 
+            std::string key = "filter.";
+            key.append(r->options_.filter_policy->Name());
+
+            std::string handle_encode;
+            filterblock_handle.EncodeTo(&handle_encode);        // 将 handle 数据写到 encode 
+            meta_index_block.Add(key, handle_encode);           // 将 encode 写到 block
+        }
+
+        WriteBlock(&meta_index_block, &metaindexblock_handle);
+    }
+
+    // 3. Write index Block 
+    if (ok()) {
+        if (r->pending_index_entry_) {
+            // Key   <======>   key对应的位置(handle)
+            r->options_.comparator->FindShortSuccessor(&r->last_key_);
+            std::string handle_encode;
+            // 将 offset 等写进encode中
+            r->pending_handle_.EncodeTo(&handle_encode);
+            r->index_block_.Add(r->last_key_, handle_encode);
+            r->pending_index_entry_ = false;
+        }
+        WriteBlock(&r->index_block_, &indexblock_handle);
+    }
+
+    // 4. Write Footer
+
+    if (ok()) {
+        Footer footer;
+        footer.set_metaIndex_handle(metaindexblock_handle);
+        footer.set_index_handle(indexblock_handle);
+        std::string footer_encoding;
+        footer.EncodeTo(&footer_encoding);
+        r->status_ = r->file_->Append(footer_encoding);
+        if (r->status_.ok()) {
+            r->offset_ += footer_encoding.size();
+        }
+    }
+
+    return r->status_;
+
+}
+
+
