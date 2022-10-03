@@ -25,7 +25,14 @@ class InternalKeyCom : Comparator{
 
     int operator()(const Slice& a, const Slice& b);
 
-    // int Compare(const InternalKey& a, const InternalKey& b) const;
+    void FindShortestSeparator(std::string* start, const Slice& limit) const override {
+        user_com_->FindShortestSeparator(start, limit);
+    }
+    
+    void FindShortSuccessor(std::string* key) const override {
+        user_com_->FindShortSuccessor(key);
+    }
+
 
  private:
     const Comparator* user_com_;

@@ -23,7 +23,7 @@ Status BlockHandle::DecodeFrom(Slice* input) {
 // 将footer写进dst中
 void Footer::EncodeTo(std::string* dst) const {
 
-    const int originsize = dst->size();
+    const int originsize = dst->size();     // 一直没用过， 编译报 warning 
     // 1.将index[s] 放进去
     metaIndex_handle_.EncodeTo(dst);
     index_handle_.EncodeTo(dst);
@@ -35,10 +35,10 @@ void Footer::EncodeTo(std::string* dst) const {
     PutFixed32(dst, static_cast<uint32_t>(kTableMagicNumber & 0xffffffffu));
     PutFixed32(dst, static_cast<uint32_t>(kTableMagicNumber >> 32));
     assert(originsize + kEncodedLen == dst->size());
-    (void)originsize;   // 清除掉Warning 
+    (void)originsize;                      // 清除掉编译时Warning 
 }
 
-// 解析
+// 解析foot, Fixed Size, 能够通过 Size 直接 读取到数据
 Status Footer::DecodeFrom(Slice* input) {
     // 1.我们首先解析魔数
     const char* magic_ptr = input->data() + kEncodedLen - 8;      // 魔数的起始位置

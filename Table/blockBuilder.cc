@@ -2,6 +2,7 @@
 #include "Options.h"
 #include "Coding.h"
 #include "Comparator.h"
+#include "Coding.h"
 
 using namespace xindb;
 
@@ -22,6 +23,8 @@ Slice BlockBuilder::Finish() {
     return Slice(buffer_);
 }
 
+
+// 计算一下 block 所占用的空间， 
 size_t BlockBuilder::CurrentSizeEstimate() const {
     return buffer_.size() + restarts_.size() * sizeof(uint32_t) + sizeof(uint32_t);
 }
@@ -50,8 +53,8 @@ void BlockBuilder::Add(const Slice& key, const Slice& value) {
         while (shared < minlen && last_key_slice[shared] == key[shared]) 
             shared++;
     } else {
-        // 那就是重启了一个group?
-        restarts_.push_back(buffer_.size());
+        // 本 group 完成了， 下面写写一个 entry group
+        restarts_.push_back(buffer_.size());                // 标记一下重启点用于二分查找
         counter_ = 0;
     }
 

@@ -28,7 +28,7 @@ void FilterBlockBuilder::StartBlock(uint64_t block_offset) {
 
 
 // 将 InternalKey 写入到 keys_ 中， 用 start_ 标识 key 的位置
-// 将全部的数据写入完毕之后会调用StartBlock 
+// 将全部的数据写入完毕之后会调用 StartBlock 
 void FilterBlockBuilder::AddKey(const Slice& key) {
     Slice k = key;
     start_.push_back(keys_.size());        // 新插入的key的起始位置

@@ -11,6 +11,8 @@
 #endif
 
 #ifdef  __cplusplus
+
+namespace xindb {
 namespace tinycrc {
 #endif
 
@@ -169,3 +171,4 @@ CRCTB_ALIGN uint32_t __crc32_table[256] =
 } // end namespace
 #endif
 
+} // namesapce xindb

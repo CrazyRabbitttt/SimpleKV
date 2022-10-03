@@ -7,6 +7,7 @@
 #include "Filter.h"
 #include "format.h"
 #include "CrcChecksum.h"
+#include "Comparator.h"
 #include "Coding.h"
 #include "PosixWrite.h"
 
@@ -56,6 +57,10 @@ Status TableBuilder::status() const {
     return rep_->status_;
 }
 
+uint64_t TableBuilder::NumEntries() const {
+    return rep_->num_entries_; 
+}
+
 
 TableBuilder::TableBuilder(const Options& options, WritableFile* file)
     : rep_(new Rep(options, file)) {
@@ -76,13 +81,18 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     assert(!r->closed_);
     if (!ok()) return;
 
+    printf("the numentries is %d\n", r->num_entries_);
     if (r->num_entries_ > 0) {
         // Key 应该是升序的
+        printf("running here1\n");
+        printf("will run option->com->Compare..\n");
         assert(r->options_.comparator->Compare(key, Slice(r->last_key_)) > 0);
+        printf("running here2\n");
     } 
     // ============= IndexBlock 的写入 =================
     // 前提条件是刚刚写完了 DataBlock, 构建下一个 DataBlock 之前写 IndexBlock
     if (r->pending_index_entry_) {
+        printf("running here3\n");
         // 刚刚写完 DataBlock， 那么应该目前是空的
         assert(r->data_block_.empty());
         // 找到一个较小的字符串作为 边界标识 last_key <= X < key
@@ -90,28 +100,33 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
         std::string handle_encoding;            
         r->pending_handle_.EncodeTo(&handle_encoding);
 
-        // 添加 Index
+        // 添加 Index [last_key   <=====>   indexhandle]
         r->index_block_.Add(r->last_key_, Slice(handle_encoding));
+
 
         // 写完了 IndexBlock 了
         r->pending_index_entry_ = false;
+        printf("running here4\n");
     }
 
     // 写 DataBlock 就要同步的进行 Filter 的写入
     if (r->filter_block_ != nullptr) {
         r->filter_block_->AddKey(key);
+        printf("running here5\n");
     }
 
     // 更新 LastKey 等数据, 写到 DataBlock 中
     r->last_key_.assign(key.data(), key.size());
     r->num_entries_++;
     r->data_block_.Add(key, value);
-
+    printf("running here6\n");
     // 如果说 DataBlock Size 达到阈值了那么 就Flush
     const size_t etsimated_block_size = r->data_block_.CurrentSizeEstimate();
     if (etsimated_block_size >= r->options_.block_size) {
+        printf("running here7\n");
         Flush();
     }
+    printf("running here8\n");
 }
 
 
@@ -123,11 +138,11 @@ void TableBuilder::Flush() {
     if (r->data_block_.empty()) return ;
     assert(!r->pending_index_entry_);       // 不是写 IndexBlock 的时机
 
-    // 对于 DataBlock 压缩， 生成 Block Handle
+    // 对于 DataBlock 压缩， 生成 Block Handle， type|crc32
     WriteBlock(&r->data_block_, &r->pending_handle_);
     if (ok()) {
         // 设置一下 下次就是写 IndexBlock 了
-        r->pending_index_entry_ = true;
+        r->pending_index_entry_ = true;         
         r->status_ = r->file_->Flush();         // 刷盘
     }
 
@@ -141,8 +156,8 @@ void TableBuilder::Flush() {
 void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
     Rep* r = rep_;
 
-    // 获得 DataBlock 的数据
-    Slice rawdata = block->Finish();
+    // 获得 DataBlock 的数据， 最终以 Slice【字符串】 形式返回所有的 datablock 内容
+    Slice rawdata = block->Finish();        
     Slice block_contents;
 
     // 默认不进行压缩
@@ -166,26 +181,28 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
     block->Reset();
 }
 
-// 具体的将 DataBlock 写入到磁盘中去
-void TableBuilder::WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle) {
+// 具体的将 DataBlock 写入到磁盘中去 
+void TableBuilder::WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle) { 
     Rep* r = rep_;
     // 设置 Handle 的值
     handle->set_offset(r->offset_);
     handle->set_size(block_contents.size());
 
-    r->status_ = r->file_->Append(block_contents);
+    // 具体的调用 写数据  
+    r->status_ = r->file_->Append(block_contents);      // 写到磁盘缓冲区
     if (r->status_.ok()) {
         // 将 Crc, Type 啥的加到尾巴的后面
-        char trailter[80];
+        char trailter[kBlockTrailerSize];
         trailter[0] = type;
-        uint32_t crc = crc32(block_contents.data(), block_contents.size());
+        uint32_t crc = crc32(block_contents.data(), block_contents.size());  
         EncodeFixed32(trailter + 1, crc);
-        r->status_ = r->file_->Append(Slice(trailter, kBlockTrailerSize));
+        r->status_ = r->file_->Append(Slice(trailter, kBlockTrailerSize));  
         if (r->status_.ok()) {
-            r->offset_ += block_contents.size() + kBlockTrailerSize;
+            r->offset_ += block_contents.size() + kBlockTrailerSize;  // block 的 offset, 
         }
     }
 }
+
 
 // SST 最终的结尾
 Status TableBuilder::Finish() {
@@ -238,7 +255,7 @@ Status TableBuilder::Finish() {
         Footer footer;
         footer.set_metaIndex_handle(metaindexblock_handle);
         footer.set_index_handle(indexblock_handle);
-        std::string footer_encoding;
+        std::string footer_encoding;            // 将 handle 数据编码写进字符串中
         footer.EncodeTo(&footer_encoding);
         r->status_ = r->file_->Append(footer_encoding);
         if (r->status_.ok()) {

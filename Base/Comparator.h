@@ -40,6 +40,7 @@ class ByteWiseComparator : public Comparator{
     }
 
     int Compare(const Slice&a, const Slice& b) const override {
+        printf("Compare......\n");
         return a.compare(b);
     }
     
@@ -47,9 +48,9 @@ class ByteWiseComparator : public Comparator{
         return a.compare(b);
     }
 
-    void FindShortestSeparator(std::string* start, const Slice& limit) const = 0;
+    void FindShortestSeparator(std::string* start, const Slice& limit) const override;
     
-    void FindShortSuccessor(std::string* key) const = 0; 
+    void FindShortSuccessor(std::string* key) const override; 
 };
 
 

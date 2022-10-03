@@ -25,6 +25,7 @@ class ByteCom : public Comparator {
 
     //call the function in Slcie
     int Compare(const Slice& a, const Slice& b) const override {
+        printf("调用了 options->com->Compare..\n");
         return a.compare(b);
     }
 

@@ -35,7 +35,7 @@ class BlockBuilder {
     // Options, 创建DB的时候的策略，还是写一个吧，始终采取默认的方式好了
     const Options* options_;
     std::string buffer_;    
-    std::vector<uint32_t> restarts_;            // 重启点，盲猜每个Group为边界？
+    std::vector<uint32_t> restarts_;            // 重启点，以每个Group为边界
     int counter_;                               // entry的数目
     bool finished_;                             // 是否调用了Finish()
     std::string last_key_;

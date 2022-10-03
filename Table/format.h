@@ -29,6 +29,8 @@ class BlockHandle {
     uint64_t size_;
 };
 
+inline BlockHandle::BlockHandle() 
+   : offset_(static_cast<uint64_t>(0)), size_(static_cast<uint64_t>(0)) {}
 
 class Footer {
  public:
@@ -57,7 +59,6 @@ class Footer {
 
 // datablock 的最后面的位置， type + crc32 
 static const size_t kBlockTrailerSize = 5;
-
 
 // 魔数
 static const uint64_t kTableMagicNumber = 0xdb4775248b80fb57ull;

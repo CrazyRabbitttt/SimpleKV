@@ -46,8 +46,8 @@ void func() {
     }
 }
 
-int main() {
-    func();
+// int main() {
+//     func();
 
-}
+// }
 

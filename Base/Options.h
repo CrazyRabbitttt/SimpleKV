@@ -3,7 +3,8 @@
 
 namespace xindb {
 
-
+class ByteWiseComparator;
+class FilterPolicy;
 class Comparator;
 
 enum CompressType {
@@ -27,7 +28,8 @@ struct Options {
     // 当 DB 目录不存在的时候进行创建
     bool create_if_missing = false;
 
-    const Comparator* comparator;
+    // const Comparator* comparator;
+    const ByteWiseComparator* comparator;
 
     CompressType compression = kSnappyCompress;
 

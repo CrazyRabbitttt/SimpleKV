@@ -33,6 +33,8 @@ class TableBuilder {
 
     Status Finish();
 
+    uint64_t NumEntries() const;
+
  private:
 
     void WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle);
