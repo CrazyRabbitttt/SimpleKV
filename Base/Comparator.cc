@@ -37,5 +37,10 @@ void ByteWiseComparator::FindShortSuccessor(std::string* key) const  {
     }
 
 
+// const Comparator* BytewiseComparator() {
+//   static NoDestructor<BytewiseComparatorImpl> singleton;
+//   return singleton.get();
+// }
+
 }   // namespace xindb
 

@@ -10,6 +10,7 @@
 #include "Comparator.h"
 #include "Coding.h"
 #include "PosixWrite.h"
+#include <stdio.h>
 
 using namespace xindb;
 using namespace xindb::tinycrc;
@@ -81,11 +82,11 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     assert(!r->closed_);
     if (!ok()) return;
 
-    printf("the numentries is %d\n", r->num_entries_);
+    printf("the numentries is %d\n", (int)r->num_entries_);
     if (r->num_entries_ > 0) {
         // Key 应该是升序的
-        printf("running here1\n");
-        printf("will run option->com->Compare..\n");
+        printf("key:%s|, lastkey:%s|\n", key.data(), r->last_key_.data());
+        printf("The comName :%s\n", r->options_.comparator->Name());
         assert(r->options_.comparator->Compare(key, Slice(r->last_key_)) > 0);
         printf("running here2\n");
     } 

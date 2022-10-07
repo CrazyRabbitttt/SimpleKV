@@ -1,5 +1,7 @@
+
 #include "Log_writer.h"
 #include "Coding.h"
+#include "CrcChecksum.h"
 
 using namespace xindb;
 using namespace Log;
@@ -24,7 +26,7 @@ Status Writer::AddRecord(const Slice& slice) {
         assert(avil >= 0);
         if (avil < kHeaderSize) {       // 连盛下头部的空间都没了
             if (avil > 0) {
-                dest_->Append(Slice("\x00\x00\x00", avil)); // 填充头部3B
+                dest_->Append(Slice("\x00\x00\x00\x00\x00\x00", avil)); // 填充头部3B
             }
             block_offset_ = 0;
         }
@@ -55,9 +57,14 @@ Status Writer::EmitPhysicalRecord(RecordType type, const char* ptr, size_t len) 
 
     // len(2 Bytes), Type(1Bytes)
     char buf[kHeaderSize];
-    buf[0] = static_cast<char>(len & 0xff);
-    buf[1] = static_cast<char>(len >> 8);
-    buf[2] = static_cast<char>(type);
+    buf[4] = static_cast<char>(len & 0xff);
+    buf[5] = static_cast<char>(len >> 8);
+    buf[6] = static_cast<char>(type);
+
+    // 计算 crc 校验和写进 Record 中
+    uint32_t crc = tinycrc::crc32(ptr, len);
+    EncodeFixed32(buf, crc);            // 将 crc 编码进 buf 中去
+    
 
     // 写进Log中，写完刷盘
     Status status = dest_->Append(Slice(buf, kHeaderSize));

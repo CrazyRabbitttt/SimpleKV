@@ -7,9 +7,7 @@
 
 namespace xindb {
 
-class ByteWiseComparator;
-
-// Base class, Interface 
+// 抽象基类, 都是虚函数
 class Comparator {
  public:
     virtual ~Comparator() = default;
@@ -26,9 +24,6 @@ class Comparator {
 
 };
 
-
-
-
 class ByteWiseComparator : public Comparator{
  public:    
     ByteWiseComparator() = default;
@@ -40,7 +35,6 @@ class ByteWiseComparator : public Comparator{
     }
 
     int Compare(const Slice&a, const Slice& b) const override {
-        printf("Compare......\n");
         return a.compare(b);
     }
     
@@ -53,6 +47,10 @@ class ByteWiseComparator : public Comparator{
     void FindShortSuccessor(std::string* key) const override; 
 };
 
+// const ByteWiseComparator* GetByteComparator() {
+//     static ByteWiseComparator singleton;
+//     return &singleton;
+// }
 
 
 }   // namespace xindb

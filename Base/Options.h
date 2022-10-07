@@ -1,11 +1,11 @@
 #ifndef XINDB_BASE_OPTIONS_H
 #define XINDB_BASE_OPTIONS_H
 
+#include "Comparator.h"
+
 namespace xindb {
 
-class ByteWiseComparator;
 class FilterPolicy;
-class Comparator;
 
 enum CompressType {
     kNoCompression  = 0x0,
@@ -16,10 +16,10 @@ enum CompressType {
 // 数据库运行的时候的参数
 struct Options {
 
-    Options() = default;  
+    Options();  
 
     // number of keys between restart pointers for delta 
-    // 大致是每个Group的size？ 多少个entry构建成为一个group
+    // 大致是每个Group的size？ 多少个entry构建成为一个group, Restart 的距离
     int block_restart_interval = 16;
 
     // SST 中 block_size 的大小

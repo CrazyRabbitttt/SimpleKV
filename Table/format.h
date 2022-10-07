@@ -6,6 +6,10 @@
 
 namespace xindb {
 
+class RandomAccessFile;   
+class Block;
+struct ReadOption;
+
  // 也就是封装了offset & size ???
 class BlockHandle {
  public:
@@ -62,6 +66,18 @@ static const size_t kBlockTrailerSize = 5;
 
 // 魔数
 static const uint64_t kTableMagicNumber = 0xdb4775248b80fb57ull;
+
+
+struct BlockContents {
+   Slice data;             // 实际上的数据
+   bool cacheable;         // 是否能被缓存
+   bool heap_allocated;    // 是否是堆分配的， 要delete掉
+};
+
+
+Status ReadBlock(RandomAccessFile* file, const ReadOption& option,
+                  const BlockHandle& handle, BlockContents* result);
+
 
 }   // namespace xindb 
 

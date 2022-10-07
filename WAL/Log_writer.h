@@ -30,6 +30,8 @@ class Writer {
 
    PosixWritableFile* dest_;
    int block_offset_;       // 当前的offset在block中
+
+   uint32_t type_crc_[kMaxRecordType + 1];
 };
 
 

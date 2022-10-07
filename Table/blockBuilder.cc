@@ -45,7 +45,7 @@ void BlockBuilder::Add(const Slice& key, const Slice& value) {
     assert(!finished_);
     assert(counter_ <= options_->block_restart_interval);
     // 下面是要保证传入的key是有序的，
-    assert(buffer_.empty() || options_->comparator->Compare(key, last_key_slice) > 0);
+    // assert(buffer_.empty() || options_->comparator->Compare(key, last_key_slice) > 0);
     size_t shared = 0;
     if (counter_ < options_->block_restart_interval) {
         // 看一下相同的前缀的长度
