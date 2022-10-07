@@ -85,15 +85,11 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     printf("the numentries is %d\n", (int)r->num_entries_);
     if (r->num_entries_ > 0) {
         // Key 应该是升序的
-        printf("key:%s|, lastkey:%s|\n", key.data(), r->last_key_.data());
-        printf("The comName :%s\n", r->options_.comparator->Name());
         assert(r->options_.comparator->Compare(key, Slice(r->last_key_)) > 0);
-        printf("running here2\n");
     } 
     // ============= IndexBlock 的写入 =================
     // 前提条件是刚刚写完了 DataBlock, 构建下一个 DataBlock 之前写 IndexBlock
     if (r->pending_index_entry_) {
-        printf("running here3\n");
         // 刚刚写完 DataBlock， 那么应该目前是空的
         assert(r->data_block_.empty());
         // 找到一个较小的字符串作为 边界标识 last_key <= X < key
@@ -107,27 +103,22 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
 
         // 写完了 IndexBlock 了
         r->pending_index_entry_ = false;
-        printf("running here4\n");
     }
 
     // 写 DataBlock 就要同步的进行 Filter 的写入
     if (r->filter_block_ != nullptr) {
         r->filter_block_->AddKey(key);
-        printf("running here5\n");
     }
 
     // 更新 LastKey 等数据, 写到 DataBlock 中
     r->last_key_.assign(key.data(), key.size());
     r->num_entries_++;
     r->data_block_.Add(key, value);
-    printf("running here6\n");
     // 如果说 DataBlock Size 达到阈值了那么 就Flush
     const size_t etsimated_block_size = r->data_block_.CurrentSizeEstimate();
     if (etsimated_block_size >= r->options_.block_size) {
-        printf("running here7\n");
         Flush();
     }
-    printf("running here8\n");
 }
 
 

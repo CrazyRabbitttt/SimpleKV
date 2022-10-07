@@ -36,7 +36,8 @@ aux_source_directory(Table SRC_LIST6)
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 # add_executable(TestSkipList ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5} ${SRC_LIST6})
 # add_executable(TestMemTable ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5} ${SRC_LIST6})
-add_executable(TestTable ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5} ${SRC_LIST6})
+# add_executable(TestTable ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5} ${SRC_LIST6})
+add_executable(TestWrite ${SRC_LIST1} ${SRC_LIST2} ${SRC_LIST3} ${SRC_LIST4} ${SRC_LIST5} ${SRC_LIST6})
 
 target_link_libraries(${PROJECT_NAME}  ${CMAKE_THREAD_LIBS_INIT})
 

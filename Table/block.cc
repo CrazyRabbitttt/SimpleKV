@@ -7,7 +7,7 @@
 #include "Comparator.h"
 #include "format.h"
 #include "Coding.h"
-
+#include "iterator.h"
 
 
 using namespace xindb;
@@ -166,6 +166,8 @@ class Block::Iter : public Iterator {
             SeekToRestartPoint(left);
         }
 
+
+        // 前面已经将 restartindex 标注好了
         while (true) {
             if (!ParseNextKey()) {
                 return;
@@ -174,6 +176,53 @@ class Block::Iter : public Iterator {
         }
 
     }
+
+    // 查找第一条数据，index 标记为1就好了
+    void SeekToFirst() override {
+        SeekToRestartPoint(0);
+        ParseNextKey();
+    }
+
+
+    void SeekToLast() override {
+        SeekToRestartPoint(num_restarts_ - 1);
+        //  一直解析next Entry |   直到下一个entry是边界才停止
+        while (ParseNextKey() && NextEntryOffset() < restarts_) {}
+    }
+
+    void Next() override {
+        assert(Valid());
+        ParseNextKey();
+    }
+
+
+    // iter 指向的前一个数值
+    void Prev() override {
+        assert(Valid());
+
+        // 要找到对应的 重启点的呀
+
+        // 保存一下现在节点的位置，最后用于比较
+        const uint32_t original = current_;
+        while (GetRestartPoint(restart_index_) >= original) {
+            if (restart_index_ == 0) {      
+                // 找不到，一般找不到的都回归原位[一个non_valid的位置]
+                current_ = restarts_;
+                restart_index_ = num_restarts_;
+                return ;
+            }
+            restart_index_ --;
+        }
+
+        // 目前找到了数值对应的重启点 【restart】
+        SeekToRestartPoint(restart_index_);
+        do {
+            // 直到下一个entry是original才停下
+        } while (ParseNextKey() && NextEntryOffset() < original);
+
+    }
+
+
 
  private:
     void CorruptionError() {
@@ -184,7 +233,7 @@ class Block::Iter : public Iterator {
         value_.clear();
     }
 
-    // 记录 restart_index_
+    // 记录 restart_index_, 维护value初始值
     void SeekToRestartPoint(uint32_t index) {
         key_.clear();
         restart_index_ = index;
@@ -225,9 +274,9 @@ class Block::Iter : public Iterator {
             key_.append(p, non_shared);
             value_ = Slice(p + non_shared, value_length);
             while (restart_index_ + 1 < num_restarts_ && 
-                    GetRestartPoint(restart_index_ + 1) < current_)
+                    GetRestartPoint(restart_index_ + 1) < current_)         // ???? 为什么会出现这种情况？
             {
-                restart_index_++;
+                restart_index_++;                                           // 读取完了本 entry 的数据，转移 restart index
             }
             return true;
         }
@@ -239,6 +288,13 @@ class Block::Iter : public Iterator {
     }
 
 };
+
+
+
+Iterator* Block::NewIterator(const Comparator* comparator) {
+    const uint32_t num_restarts = NumRestart();
+    return new Iter(comparator, data_, restart_offset_, num_restarts);
+}
 
 
 

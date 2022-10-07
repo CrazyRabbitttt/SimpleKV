@@ -36,6 +36,10 @@ class Block {                   // 用于对于数据的读取
     bool owend_;                    // Block owned data_[], 是否是堆分配的
 };
 
+
+
+
+
 }   // namespace xindb
 
 #endif
