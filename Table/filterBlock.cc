@@ -7,8 +7,8 @@
 using namespace xindb;
 
 // DataBlock 中每 2KB 就生成一个布隆过滤器
-static const size_t kFilterBasebit = 11;
-static const size_t kFilterBase    = 1 << kFilterBasebit;  
+static const size_t kFilterBaselg = 11;
+static const size_t kFilterBase    = 1 << kFilterBaselg;  
 
 
 FilterBlockBuilder::FilterBlockBuilder(const FilterPolicy* policy)
@@ -75,9 +75,9 @@ Slice FilterBlockBuilder::Finish() {
         GenerateFilter();
     }
 
-    // 将所有的偏移量写入到 result_ 的尾部
+    // 将所有的偏移量写入到 result_ 的尾部, 也就是将很多的 index entry 写到尾巴
     size_t Size = result_.size();
-    for (size_t i = 0; i < result_.size(); i++) {
+    for (size_t i = 0; i < filter_offsets_.size(); i++) {
         PutFixed32(&result_, filter_offsets_[i]);
     }
 
@@ -85,8 +85,59 @@ Slice FilterBlockBuilder::Finish() {
     PutFixed32(&result_, Size);
 
     // 将Base也就是我们每2KB生成一个过滤器写入
-    result_.push_back(kFilterBase);
+    result_.push_back(kFilterBaselg);
     return Slice(result_);
 }
 
+
+FilterBlockReader::FilterBlockReader(const FilterPolicy* policy, const Slice& contents)
+    : policy_(policy),
+      data_(nullptr),
+      offset_(nullptr),
+      num_(0),
+      base_lg_(0) {
+
+//                                                              4B            1B
+// filter_data1 filter_data2 ...  | filter_data_offsets | filter_data_size | base_lg
+
+    size_t n = contents.size();
+    if (n < 5) return;      // 1B[base_lg], 4B[start of offset]
+
+    // 最后一个字节记录的是kFilterBaseLog
+    base_lg_ = contents[n-1];
+
+    // 4个字节记录 filter_data的大小， offset[s] 的起始位置
+    uint32_t last_word = DecodeFixed32(contents.data() + n - 5);
+    if (last_word > n - 5) return;
+
+    data_ = contents.data();
+
+    // filter data offset, 就是 offsets 的起始位置
+    offset_ = data_ + last_word;
+
+    // filter 的个数
+    num_ = (n - 5 - last_word) / 4;
+}
+
+
+// 快速判断 key 是否存在于 block 中
+bool FilterBlockReader::KeyMayMatch(uint64_t block_offset, const Slice& key) {
+    // 位于哪一个 filter data
+    uint64_t index = block_offset >> kFilterBaselg;
+    // offset 就是 offset 数组的初始的位置
+    if (index < num_) {
+        uint32_t start = DecodeFixed32(offset_ + index * 4);
+        uint32_t limit = DecodeFixed32(offset_ + index * 4 + 4);
+
+        if (start <= limit && limit <= static_cast<size_t>(offset_ - data_)) {
+            // 反解析出来对应的数据， bitmap
+            Slice filter = Slice(data_ + start, limit - start);
+            return policy_->KeyMayMatch(key, filter);
+        } else if (start == limit) {
+            // Empty filters do not match any keys
+            return false;
+        }
+    }
+    return true;
+}
 

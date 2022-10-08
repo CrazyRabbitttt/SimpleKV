@@ -77,21 +77,21 @@ void test_block(const std::string block_contents) {
 
 
 
-int main() {
+// int main() {
 
 
-    // std::string filename("Posix_writable_file_test.data");
-    // int fd = open(filename.c_str(), O_RDWR);
-    // PosixWritableFile file(filename, fd);
+//     // std::string filename("Posix_writable_file_test.data");
+//     // int fd = open(filename.c_str(), O_RDWR);
+//     // PosixWritableFile file(filename, fd);
 
-    // file.Append("hello, world\n");
-    // file.Append("hello, go\n");
-    // file.Append("hello, programmer\n");
-    // file.Append(std::string("\x00\x00\x00\x00\x00\x00", 4));
+//     // file.Append("hello, world\n");
+//     // file.Append("hello, go\n");
+//     // file.Append("hello, programmer\n");
+//     // file.Append(std::string("\x00\x00\x00\x00\x00\x00", 4));
 
-    // file.Flush();
+//     // file.Flush();
 
-    std::string tmp = test_block_builder();
-    test_block(tmp);
-    return 0;
-}
+//     std::string tmp = test_block_builder();
+//     test_block(tmp);
+//     return 0;
+// }
