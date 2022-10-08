@@ -9,12 +9,12 @@ namespace xindb {
 // Base Class
 class Iterator {
  public:
-    Iterator();
+    Iterator() = default;
 
     Iterator(const Iterator&) = delete;
     Iterator&operator=(const Iterator&) = delete;
 
-    virtual ~Iterator();
+    virtual ~Iterator() = default;
 
     // 是否定位于 key-val 键值对
     virtual bool Valid() const = 0;
