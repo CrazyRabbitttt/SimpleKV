@@ -10,7 +10,7 @@
 #include "iterator.h"
 
 
-using namespace xindb;
+namespace xindb {
 
 
 // 反解析出 restart 的个数
@@ -297,4 +297,4 @@ Iterator* Block::NewIterator(const Comparator* comparator) {
 }
 
 
-
+}   // namespace xindb 

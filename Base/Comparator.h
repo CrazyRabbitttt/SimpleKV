@@ -47,6 +47,12 @@ class ByteWiseComparator : public Comparator{
     void FindShortSuccessor(std::string* key) const override; 
 };
 
+
+const Comparator* GetByteWiseComparator() {
+    static ByteWiseComparator singleton;
+    return &singleton;
+}
+
 // const ByteWiseComparator* GetByteComparator() {
 //     static ByteWiseComparator singleton;
 //     return &singleton;

@@ -8,7 +8,7 @@ namespace xindb {
 
 class RandomAccessFile;   
 class Block;
-struct ReadOption;
+struct ReadOptions;
 
  // 也就是封装了offset & size ???
 class BlockHandle {
@@ -74,8 +74,8 @@ struct BlockContents {
    bool heap_allocated;    // 是否是堆分配的， 要delete掉
 };
 
-
-Status ReadBlock(RandomAccessFile* file, const ReadOption& option,
+// 读取 block 中的数据
+Status ReadBlock(RandomAccessFile* file, const ReadOptions& option,
                   const BlockHandle& handle, BlockContents* result);
 
 

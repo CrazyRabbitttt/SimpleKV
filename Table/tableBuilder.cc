@@ -161,6 +161,7 @@ void TableBuilder::WriteBlock(BlockBuilder* block, BlockHandle* handle) {
             break;
         case kSnappyCompress: {
             // 没有支持 snappy 的压缩
+            block_contents = rawdata;
             break;
         }
     }

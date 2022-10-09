@@ -31,10 +31,27 @@ struct Options {
     // const Comparator* comparator;
     const ByteWiseComparator* comparator;
 
+    // 压缩的策略
     CompressType compression = kSnappyCompress;
+
+    // 极尽严格的检查，有一个数据entry不符合可能导致表打开失败
+    bool paranoid_check = false;
 
     const FilterPolicy* filter_policy = nullptr;
 };
+
+
+// 读取的策略
+struct ReadOptions {
+    ReadOptions() = default;
+
+    bool verify_checksums = false;
+
+    // 是否将本迭代器读取到的数据缓存进 memory 中？
+    // 批量扫描就设置为 false
+    bool fill_cache = true;
+};
+
 
 
 }   // namespace xindb

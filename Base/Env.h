@@ -49,6 +49,22 @@ class SequentialFile {
 };
 
 
+class RandomAccessFile {
+
+ public:
+  
+ RandomAccessFile() = default;
+
+ RandomAccessFile(const RandomAccessFile&) = delete;
+ RandomAccessFile& operator=(const RandomAccessFile&) = delete;
+
+ virtual ~RandomAccessFile() = default;
+
+ virtual Status Read(uint64_t offset, size_t n, Slice* result, char* scrach) const = 0;
+
+};
+
+
 }   // namespace xindb
 
 #endif

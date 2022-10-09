@@ -1,9 +1,11 @@
 
 #include "format.h"
 #include "Coding.h"
+#include "PosixEnv.h"
+#include "CrcChecksum.h"
+#include "Options.h"
 
-using namespace xindb;
-
+namespace xindb {
 
 void BlockHandle::EncodeTo(std::string *dst) const {
     PutVarint64(dst, offset_);      // 内部调用的是append
@@ -64,3 +66,75 @@ Status Footer::DecodeFrom(Slice* input) {
 }
 
 
+// ReadBlock(file, opt, footer.index_handle(), &index_block_contents);
+
+// 从文件中读取 block 出来[通过blockhandle]，暂存到 blockcontents 中
+Status ReadBlock(RandomAccessFile* file, const ReadOptions& options, 
+                const BlockHandle& handle, BlockContents* result) {
+
+    result->data = Slice();
+    result->cacheable = false;
+    result->heap_allocated = false;         // not alloc by heap 
+
+    size_t n = static_cast<size_t>(handle.size());
+    char* buf = new char[n + kBlockTrailerSize];
+    Slice contents; 
+    // 从offset的位置读取n字节数据写到 scratch 中, 加上最后的 5B[type|crc32]
+    Status s = file->Read(handle.offset(), n + kBlockTrailerSize, &contents, buf);
+    if (!s.ok()) {
+        delete[] buf;
+        return s;
+    }
+    
+    if (contents.size() != n + kBlockTrailerSize) {
+        delete[] buf;
+        return Status::Corruption("truncated block read");
+    }
+
+    // 检查crc校验和， 判断读取到的block是否是正确的
+    const char* data = contents.data();
+    if (options.verify_checksums) {
+        // 拿到crc校验和与类型
+        const uint32_t crc = tinycrc::crc32(data, n);       // type 没有加到 crc 里面
+        const uint32_t actual = DecodeFixed32(data + n + 1);
+        if (crc != actual) {
+            delete[] buf;
+            s = Status::Corruption("block checksum mismatch");
+            return s;
+        }
+    }
+
+    switch (data[n]) {
+        case kNoCompression:
+            if (data != buf) {
+                delete[] buf;
+                result->data = Slice(data, n);
+                result->heap_allocated = false;
+                result->cacheable = false;
+            } else {
+                result->data = Slice(buf, n);
+                result->heap_allocated = true;
+                result->cacheable = true;
+            }
+            break;
+        case kSnappyCompress :
+            if (data != buf) {
+                delete[] buf;
+                result->data = Slice(data, n);
+                result->heap_allocated = false;
+                result->cacheable = false;
+            } else {
+                result->data = Slice(buf, n);
+                result->heap_allocated = true;
+                result->cacheable = true;
+            }
+            break;
+        default:
+            delete[] buf;
+            return Status::Corruption("bad block type");
+    }
+
+    return Status::OK();
+}
+
+}   // namespace xindb

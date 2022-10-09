@@ -13,7 +13,7 @@ class Comparator;
 
 class Block {                   // 用于对于数据的读取
  public:
-    // 指定 content 我们来读取
+    // 指定 content 我们来解析内容
     explicit Block(const BlockContents& contents);
 
     Block(const Block&) = delete;
