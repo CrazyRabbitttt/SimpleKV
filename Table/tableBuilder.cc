@@ -189,6 +189,11 @@ void TableBuilder::WritaRawBlock(const Slice& block_contents, CompressType type,
         trailter[0] = type;
         uint32_t crc = crc32(block_contents.data(), block_contents.size());  
         EncodeFixed32(trailter + 1, crc);
+        printf("crc check sum :");
+        for (int i = 1; i <= 4; i++) {
+            printf("%d ", trailter[i]);
+        }
+        printf("\n");
         r->status_ = r->file_->Append(Slice(trailter, kBlockTrailerSize));  
         if (r->status_.ok()) {
             r->offset_ += block_contents.size() + kBlockTrailerSize;  // block 的 offset, 
@@ -260,4 +265,6 @@ Status TableBuilder::Finish() {
 
 }
 
+
+uint64_t TableBuilder::FileSize() const { return rep_->offset_; }
 

@@ -35,6 +35,8 @@ class TableBuilder {
 
     uint64_t NumEntries() const;
 
+    uint64_t FileSize() const;
+
  private:
 
     void WritaRawBlock(const Slice& block_contents, CompressType type, BlockHandle* handle);

@@ -48,10 +48,10 @@ class ByteWiseComparator : public Comparator{
 };
 
 
-const Comparator* GetByteWiseComparator() {
-    static ByteWiseComparator singleton;
-    return &singleton;
-}
+// const Comparator* GetByteWiseComparator() {
+//     static ByteWiseComparator singleton;
+//     return &singleton;
+// }
 
 // const ByteWiseComparator* GetByteComparator() {
 //     static ByteWiseComparator singleton;
