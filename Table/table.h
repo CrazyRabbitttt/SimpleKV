@@ -4,7 +4,9 @@
 #include <cstdint>
 
 #include "Status.h"
+#include "format.h"
 #include "Options.h"
+#include "block.h"
 #include "iterator.h"
 
 namespace xindb {
@@ -13,9 +15,6 @@ namespace xindb {
 class Block;
 class BlockHandle;
 class RandomAccessFile;
-struct Options;
-struct ReadOptions;
-class Footer;
 
 class Table {
 

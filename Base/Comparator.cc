@@ -36,6 +36,11 @@ void ByteWiseComparator::FindShortSuccessor(std::string* key) const  {
         }   
     }
 
+const Comparator* GetByteWiseComparator() {
+    static ByteWiseComparator singleton;
+    return &singleton;
+}
+
 
 // const Comparator* BytewiseComparator() {
 //   static NoDestructor<BytewiseComparatorImpl> singleton;
