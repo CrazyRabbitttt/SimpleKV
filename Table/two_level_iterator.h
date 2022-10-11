@@ -10,11 +10,9 @@ struct ReadOptions;
 
 Iterator* NewTwoLevelIterator(
     Iterator* index_iter,
-    Iterator* 
-);
-
-
-
+    Iterator* (*block_function) (void* arg, const ReadOptions& options, const Slice& index_value),
+    void* arg, 
+    const ReadOptions& options);
 
 
 }   // namespace xindb

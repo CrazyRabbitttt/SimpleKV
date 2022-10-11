@@ -61,7 +61,7 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
     }
     s = ReadBlock(file, read_option, footer.index_handle(), &index_block_contents);
     if (s.ok()) {
-        // 目前已经是获取了 footer & index block 的内容了, 可以进行读取了呦
+        // 目前已经是获取了 footer & index block 的内容了, 可以进行读取解析了呦
         Block* index_block = new Block(index_block_contents);
         Rep* rep = new Table::Rep;
 
@@ -92,6 +92,7 @@ void Table::ReadMeta(const Footer& footer) {
         return ;
     }
 
+    // block 就是辅助解析 block 的内容的类，内部有迭代器
     Block* meta = new Block(contents);
     Iterator* iter = meta->NewIterator(GetByteWiseComparator());
     std::string key = "filter.";
@@ -137,6 +138,38 @@ void Table::ReadFilter(const Slice& filter_handle_value) {
     // 生成相应的 filter 
     rep_->filter_ = new FilterBlockReader(rep_->options_.filter_policy, block.data);
     
+}
+
+// convert index iterator's value[压缩过的 blockhandle] into corresponding block's iterator
+Iterator* Table::BlockReader(void* arg, const ReadOptions& options, const Slice& index_value) {
+    Table* table = reinterpret_cast<Table*>(arg);
+
+    Block* block = nullptr;
+
+    BlockHandle handle;
+    Slice input = index_value;
+    // 解码 handle
+    Status s = handle.DecodeFrom(&input);
+
+    // 将数据从 file 中解析出来，生成 Block 用于数据的访问
+    if (s.ok()) {
+        BlockContents contents;
+        // no cache, 不实现缓存部分了，数据保持一致是很麻烦的，而且不见得有什么效果
+        s = ReadBlock(table->rep_->file_, options, handle, &contents);
+        if (s.ok()) {
+            block = new Block(contents);
+        }
+    }
+
+    // 生成能够访问 DataBlock 的 迭代器
+    Iterator* iter = nullptr;
+    if (block != nullptr) {
+        iter = block->NewIterator(table->rep_->options_.comparator);
+    } else {
+        printf("生成二级迭代器失败[Table::BlockReader]\n");
+    }
+
+    return iter;
 }
 
 

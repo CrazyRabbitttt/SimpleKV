@@ -39,6 +39,9 @@ class Table {
                      void (*handle_result)(void* arg, const Slice& k,
                                            const Slice& v));
 
+   // 通过传入 index_block 中对应的 handle 而确定指定的 block 的 iterator 
+    static Iterator* BlockReader(void*, const ReadOptions&, const Slice&);
+
     void ReadMeta(const Footer& footer);
     void ReadFilter(const Slice& filter_handle_value);
 
