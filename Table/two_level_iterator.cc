@@ -56,6 +56,9 @@ class TwoLevelIterator : public Iterator{
             status_ = s;
     } 
 
+    // 跳过空的 datablock 的部分
+    void SkipEmptyDataBlockForward();
+    void SkipEmptyDataBlockBackward();
     void SetDataIterator(Iterator* data_iter);
     void InitDataBlock();
 
@@ -79,7 +82,10 @@ TwoLevelIterator::TwoLevelIterator(Iterator* index_iter, BlockFunction block_fun
       arg_(arg),            // 传入的是 Table 吧
       options_(options),
       index_iter_(index_iter),
-      data_iter_(nullptr) {}
+      data_iter_(nullptr) {
+
+        printf("twoleveliterator 的构造函数...\n");
+      }
     
 TwoLevelIterator::~TwoLevelIterator() = default;
 
@@ -92,6 +98,41 @@ void TwoLevelIterator::Seek(const Slice& target) {
     if (data_iter_.iter() != nullptr) data_iter_.Seek(target);
     
 }
+
+
+// 下面的迭代器的操作都是要先操作一级迭代器然后找到二级迭代器之后再进行操作
+
+void TwoLevelIterator::SeekToFirst() {
+    // seek for first entry 
+    index_iter_.SeekToFirst();
+    InitDataBlock();
+    if (data_iter_.iter() != nullptr) data_iter_.SeekToFirst();
+    SkipEmptyDataBlockForward();
+}
+
+void TwoLevelIterator::SeekToLast() {
+    // seek for the last entry 
+    index_iter_.SeekToLast();
+    InitDataBlock();
+    if (data_iter_.iter() != nullptr) data_iter_.SeekToLast();
+    SkipEmptyDataBlockBackward();
+}
+
+
+void TwoLevelIterator::Next() {
+    assert(Valid());
+    data_iter_.Next();
+    SkipEmptyDataBlockForward();
+}
+
+
+void TwoLevelIterator::Prev() {
+    assert(Valid());
+    data_iter_.Prev();
+    SkipEmptyDataBlockBackward();
+}
+
+
 
 
 // 设置 data_iter
@@ -117,6 +158,45 @@ void TwoLevelIterator::InitDataBlock() {
             SetDataIterator(iter);
         }
     }
+}
+
+
+void TwoLevelIterator::SkipEmptyDataBlockForward() {
+    // 从一个 datablock 跳到下一个 datablock, 中间跳过很多空的部分 
+    while (data_iter_.iter() == nullptr || !data_iter_.Valid()) {
+        // 移动到下一个 block 
+        if (!index_iter_.Valid()) {     // index_iter 都不对那么就直接跳过好了
+            SetDataIterator(nullptr);
+            return ;
+        }
+        index_iter_.Next();
+        InitDataBlock();
+        if (data_iter_.iter() != nullptr) data_iter_.SeekToFirst();
+    }
+}
+
+
+// 在想要的方向上 向前走一步
+void TwoLevelIterator::SkipEmptyDataBlockBackward() {
+    while (data_iter_.iter() == nullptr || !data_iter_.Valid()) {
+        if (!index_iter_.Valid()) {
+            SetDataIterator(nullptr);
+            return ;
+        }
+
+        // 如果说有效的话，向前移动到前面的末尾？
+        index_iter_.Prev();
+        InitDataBlock();
+        if (data_iter_.iter() != nullptr) data_iter_.SeekToLast();
+    }
+}
+
+
+Iterator* NewTwoLevelIterator(Iterator* index_iter, 
+                              BlockFunction block_function, void* arg,
+                              const ReadOptions& options) {
+    printf("下面初始化一个新的 twoleveliterator\n");
+    return new TwoLevelIterator(index_iter, block_function, arg, options);
 }
 
 

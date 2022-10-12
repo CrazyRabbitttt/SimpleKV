@@ -6,6 +6,7 @@
 #include "PosixEnv.h"
 #include "Options.h"
 #include "filterBlock.h"
+#include "two_level_iterator.h"
 #include "block.h"
 #include "format.h"
 #include "Coding.h"
@@ -44,13 +45,18 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
 
     char footer_space[Footer::kEncodedLen];
     Slice footer_input;         // 最终的读取到的内容写到这里, fixed 48 bytes
-    Status s = file->Read(size - Footer::kEncodedLen, Footer::kEncodedLen, &footer_input, footer_space);
-    
-    if (!s.ok()) return s;
 
+    Status s = file->Read(size - Footer::kEncodedLen, Footer::kEncodedLen, &footer_input, footer_space);
+    for (int i = 0; i < footer_input.size(); i++) {
+        printf("[%c]", footer_input[i]);
+    }
+    if (!s.ok()) return s;
+    printf("running here 1...\n");
     Footer footer;
     s = footer.DecodeFrom(&footer_input);
+    printf("decode footer, status : %s\n", s.ToString().c_str());
     if (!s.ok()) return s;
+    printf("running here 2...\n");
 // ========================== 上面读取 Footer =================================
 // ========================== 下面读取Index Block =============================
 
@@ -60,6 +66,7 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         read_option.verify_checksums = true;
     }
     s = ReadBlock(file, read_option, footer.index_handle(), &index_block_contents);
+    printf("running here 3...\n");
     if (s.ok()) {
         // 目前已经是获取了 footer & index block 的内容了, 可以进行读取解析了呦
         Block* index_block = new Block(index_block_contents);
@@ -71,8 +78,10 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         rep->index_block_ = index_block;
         rep->cache_id = 0;
         rep->filter_data_ = nullptr;
+        printf("running here 4...\n");
         *table = new Table(rep);
         (*table)->ReadMeta(footer);
+        printf("running here 5...\n");
     }
     return s;
 }
@@ -171,5 +180,22 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options, const Slice&
 
     return iter;
 }
+
+// Table 中创建二级迭代器的借口，内部调用 twoleveliterator
+Iterator* Table::NewIterator(const ReadOptions& options) const {
+    printf("开始要创建二级迭代器...\n");
+    // pass the arguments table have to the function 
+    return NewTwoLevelIterator(
+        rep_->index_block_->NewIterator(rep_->options_.comparator),
+        &Table::BlockReader, const_cast<Table*>(this), options);
+}
+
+
+
+
+
+
+
+
 
 

@@ -255,6 +255,7 @@ Status TableBuilder::Finish() {
         footer.set_index_handle(indexblock_handle);
         std::string footer_encoding;            // 将 handle 数据编码写进字符串中
         footer.EncodeTo(&footer_encoding);
+        // footer_encoding.append("123456789012345678901234567890123456789012345678");
         r->status_ = r->file_->Append(footer_encoding);
         if (r->status_.ok()) {
             r->offset_ += footer_encoding.size();

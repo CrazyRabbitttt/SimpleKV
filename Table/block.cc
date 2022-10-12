@@ -47,7 +47,7 @@ Block::~Block() {
 
 // shared_len|non_shared_len|val_len|Key|Value
 // 最终将 pointer 指向 Key 所在的位置
-static inline const char* DecodeEntry(const char* p, const char* limit,
+static  const char* DecodeEntry(const char* p, const char* limit,
                                         uint32_t* shared, uint32_t* non_shared,
                                         uint32_t* value_length) 
 {
@@ -292,7 +292,14 @@ class Block::Iter : public Iterator {
 
 
 Iterator* Block::NewIterator(const Comparator* comparator) {
+    printf("生成block的迭代器...\n");
+    if (size_ < sizeof(uint32_t)) {
+        printf("bad block contents");
+    }
     const uint32_t num_restarts = NumRestart();
+    if (num_restarts == 0) {
+        printf("Block::Newiterator error, index block's restart nums is zero!\n");
+    }
     return new Iter(comparator, data_, restart_offset_, num_restarts);
 }
 

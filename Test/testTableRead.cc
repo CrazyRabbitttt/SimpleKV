@@ -24,6 +24,7 @@ void scan_by_table_iterator() {
     struct stat file_stat;
     stat(filename.c_str(), &file_stat);
 
+    std::cout << "target file's size : " << file_stat.st_size << std::endl;
     Status status = Table::Open(
         options,
         &file,
@@ -31,7 +32,7 @@ void scan_by_table_iterator() {
         &table
     );
 
-
+    std::cout << "leveldb::Table::Open status: "<< status.ToString() << std::endl;
     Iterator* iter = table->NewIterator(ReadOptions());
     iter->SeekToFirst();
 
@@ -41,14 +42,16 @@ void scan_by_table_iterator() {
     }
 
     delete iter;
-
+    delete table;
 
 }
 
 
 
 int main() {
-
+    printf("测试读取写入磁盘中的SST... Wish success\n");
     scan_by_table_iterator();
+
+    return 0;
 }
 
