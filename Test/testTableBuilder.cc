@@ -29,6 +29,10 @@ using namespace xindb;
 //     table_builder.Add("cope", "value");
 //     table_builder.Add("copy", "value");
 //     table_builder.Add("corn", "value");
+//     table_builder.Add("shaoguixin", "horse");
+//     table_builder.Add("ssranbing", "rabbit");
+//     table_builder.Add("sybaidu", "liyanhong");
+//     table_builder.Add("szbaitecent", "mahuateng");
 
 //     // 70 bytes
 //     Status status = table_builder.Finish();
