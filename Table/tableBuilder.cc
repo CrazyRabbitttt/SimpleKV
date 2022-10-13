@@ -105,7 +105,7 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
         r->pending_index_entry_ = false;
     }
 
-    // 写 DataBlock 就要同步的进行 Filter 的写入
+    // 写 DataBlock 就要同步的进行 Filter, Meta Block 的写入
     if (r->filter_block_ != nullptr) {
         r->filter_block_->AddKey(key);
     }
@@ -223,13 +223,13 @@ Status TableBuilder::Finish() {
         if (r->filter_block_ != nullptr) {
             // Key <====> handle 
             std::string key = "filter.";
+            printf("Write block, the filter policy name : %s\n", r->options_.filter_policy->Name());
             key.append(r->options_.filter_policy->Name());
 
             std::string handle_encode;
             filterblock_handle.EncodeTo(&handle_encode);        // 将 handle 数据写到 encode 
             meta_index_block.Add(key, handle_encode);           // 将 encode 写到 block
         }
-
         WriteBlock(&meta_index_block, &metaindexblock_handle);
     }
 
@@ -256,14 +256,13 @@ Status TableBuilder::Finish() {
         std::string footer_encoding;            // 将 handle 数据编码写进字符串中
         footer.EncodeTo(&footer_encoding);
         // footer_encoding.append("123456789012345678901234567890123456789012345678");
+        // footer_encoding.append("12345678");
         r->status_ = r->file_->Append(footer_encoding);
         if (r->status_.ok()) {
             r->offset_ += footer_encoding.size();
         }
     }
-
     return r->status_;
-
 }
 
 

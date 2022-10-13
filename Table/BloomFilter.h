@@ -84,10 +84,10 @@ class BloomFilterPolicy : public FilterPolicy{
     size_t k_;                              // the number of hash func
 };
 
+const FilterPolicy* NewBloomFilterPolicy(int bits_per_key) {
+  return new BloomFilterPolicy(bits_per_key);
+}
 
-// const FilterPolicy* NewBloomFilterPolicy(int bits_per_key) {
-//     return new BloomFilterPolicy(bits_per_key);
-// }
 
 
 }   // namesapce xindb 

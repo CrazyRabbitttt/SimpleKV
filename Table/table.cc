@@ -80,7 +80,7 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         rep->filter_data_ = nullptr;
         printf("running here 4...\n");
         *table = new Table(rep);
-        (*table)->ReadMeta(footer);
+        // (*table)->ReadMeta(footer);
         printf("running here 5...\n");
     }
     return s;
@@ -89,31 +89,34 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
 
 // 解析 Meta block 的内容
 void Table::ReadMeta(const Footer& footer) {
+    printf("running here 555..\n");
     ReadOptions read_options;
     // 严格的进行读取
     if (rep_->options_.paranoid_check) {
         read_options.verify_checksums = true;
-    }
-
+    }   
+    printf("running here 6..\n");
     BlockContents contents;
     Status s = ReadBlock(rep_->file_, read_options, footer.metaindex_handle(), &contents);
     if (!s.ok()) {
         return ;
     }
-
+    printf("running here 7..\n");
     // block 就是辅助解析 block 的内容的类，内部有迭代器
     Block* meta = new Block(contents);
     Iterator* iter = meta->NewIterator(GetByteWiseComparator());
     std::string key = "filter.";
-    key.append(rep_->options_.filter_policy->Name());
+    printf("running here 8..\n");
+    // key.append(rep_->options_.filter_policy->Name());
+    printf("running here 9..\n");
     iter->Seek(key);                // 从 filter block 中找 "filter.xxx"
+    printf("running here 10..\n");
     if (iter->Valid() && iter->key() == Slice(key)) {
         ReadFilter(iter->value());
     }
 
     delete iter;
     delete meta;
-
 }
 
 

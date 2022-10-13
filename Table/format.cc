@@ -25,7 +25,7 @@ Status BlockHandle::DecodeFrom(Slice* input) {
 // 将footer写进dst中
 void Footer::EncodeTo(std::string* dst) const {
 
-    const int originsize = dst->size();     // 一直没用过， 编译报 warning 
+    const int originsize = dst->size();     // 一直没用过， 编译报 warning
     // 1.将index[s] 放进去
     metaIndex_handle_.EncodeTo(dst);
     index_handle_.EncodeTo(dst);
@@ -47,8 +47,9 @@ Status Footer::DecodeFrom(Slice* input) {
     printf("magic_ptr : [%s]\n", magic_ptr);
     uint32_t Magic_Number_Low = DecodeFixed32(magic_ptr);
     uint32_t Magic_Number_Hig = DecodeFixed32(magic_ptr + 4);
-    uint64_t Magic_Number = ((static_cast<uint64_t>(Magic_Number_Hig << 32) | static_cast<uint64_t>(Magic_Number_Low))); 
-    printf("Magic number decoded : %d, kMagicnum : %d\n", (uint64_t)(Magic_Number), (uint64_t)(kTableMagicNumber));   
+    uint64_t Magic_Number = ((static_cast<uint64_t>(Magic_Number_Hig) << 32) |
+                              (static_cast<uint64_t>(Magic_Number_Low))); 
+    printf("Magic number decoded : %lld, kMagicnum : %lld\n", (uint64_t)(Magic_Number), (uint64_t)(kTableMagicNumber));   
 
     if (Magic_Number != kTableMagicNumber) {
         return Status::Corruption("not an sstable(bad magic numer)");
@@ -103,6 +104,8 @@ Status ReadBlock(RandomAccessFile* file, const ReadOptions& options,
             delete[] buf;
             s = Status::Corruption("block checksum mismatch");
             return s;
+        } else {
+            printf("Read Block : crc check sum right!\n");
         }
     }
 

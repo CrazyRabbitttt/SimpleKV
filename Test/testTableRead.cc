@@ -32,6 +32,7 @@ void scan_by_table_iterator() {
         &table
     );
 
+
     std::cout << "leveldb::Table::Open status: "<< status.ToString() << std::endl;
     Iterator* iter = table->NewIterator(ReadOptions());
     iter->SeekToFirst();
@@ -48,10 +49,10 @@ void scan_by_table_iterator() {
 
 
 
-int main() {
-    printf("测试读取写入磁盘中的SST... Wish success\n");
-    scan_by_table_iterator();
+// int main() {
+//     printf("测试读取写入磁盘中的SST... Wish success\n");
+//     scan_by_table_iterator();
 
-    return 0;
-}
+//     return 0;
+// }
 

@@ -21,7 +21,6 @@ class FilterPolicy {        // 过滤的策略，一般就是布隆过滤器
 };
 
 
-const FilterPolicy* NewBloomFilter(int bits_per_key);
 
 }   // namespace xindb 
 

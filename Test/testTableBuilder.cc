@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include <iostream>
 #include "PosixEnv.h"
+#include "Filter.h"
+#include "BloomFilter.h"
 #include "tableBuilder.h"
 #include "Status.h"
 #include "PosixWrite.h"
@@ -13,6 +15,7 @@ using namespace xindb;
 //     // 测试应该是成功了的，除了CRC
 //     Options options;
 //     options.block_restart_interval = 4;
+//     options.filter_policy = NewBloomFilterPolicy(10);
 
 //     std::string file_name("table_builder.data");
 //     // PosixWritableFile* file;
