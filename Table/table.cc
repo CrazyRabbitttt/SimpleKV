@@ -80,7 +80,7 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         rep->filter_data_ = nullptr;
         printf("running here 4...\n");
         *table = new Table(rep);
-        // (*table)->ReadMeta(footer);
+        (*table)->ReadMeta(footer);
         printf("running here 5...\n");
     }
     return s;
@@ -149,7 +149,7 @@ void Table::ReadFilter(const Slice& filter_handle_value) {
 
     // 生成相应的 filter 
     rep_->filter_ = new FilterBlockReader(rep_->options_.filter_policy, block.data);
-    
+    printf("running here 11...\n");
 }
 
 // convert index iterator's value[压缩过的 blockhandle] into corresponding block's iterator

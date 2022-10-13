@@ -13,7 +13,9 @@ class IteratorWrapper {
     IteratorWrapper()
         : iter_(nullptr), valid_(false) {}
     explicit IteratorWrapper(Iterator* iter)        // 传进来的 iter 是堆区开辟的 ???
-        : iter_(nullptr) {}
+        : iter_(nullptr) {
+            Set(iter);                              // nnd， 忘了这一步了，全是 nullptr 了
+        }
     ~IteratorWrapper() { delete iter_; }
     Iterator* iter() const { return iter_; }
 

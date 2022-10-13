@@ -6,7 +6,7 @@
 #include <iostream>
 #include "PosixEnv.h"
 #include "Env.h"
-
+#include "BloomFilter.h"
 #include "tableBuilder.h"
 #include "table.h"
 
@@ -16,6 +16,7 @@ using namespace xindb;
 void scan_by_table_iterator() {
     Options options;
     options.block_restart_interval = 4;
+    options.filter_policy = NewBloomFilterPolicy(10);
     Table* table = nullptr;
     std::string filename("table_builder.data");
     int fd = open(filename.c_str(), O_RDWR);
@@ -35,6 +36,7 @@ void scan_by_table_iterator() {
 
     std::cout << "leveldb::Table::Open status: "<< status.ToString() << std::endl;
     Iterator* iter = table->NewIterator(ReadOptions());
+    printf("生成twoiterator 成功\n");
     iter->SeekToFirst();
 
     while (iter->Valid()) {
@@ -49,10 +51,10 @@ void scan_by_table_iterator() {
 
 
 
-// int main() {
-//     printf("测试读取写入磁盘中的SST... Wish success\n");
-//     scan_by_table_iterator();
+int main() {
+    printf("测试读取写入磁盘中的SST... Wish success\n");
+    scan_by_table_iterator();
 
-//     return 0;
-// }
+    return 0;
+}
 
