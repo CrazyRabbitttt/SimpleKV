@@ -34,13 +34,14 @@ class WriteBatchInternal {
         return batch->rep_.size();
     }
 
-    static void SetContents(const WriteBatch* batch, const Slice& contents);
+    static void SetContents(WriteBatch* batch, const Slice& contents);
 
     static Status InsertInto(const WriteBatch* batch, MemTable* memtable);
 
     static void Append(WriteBatch* dst, const WriteBatch* src);
 
 };
+
 
 }   // namespace xindb 
 

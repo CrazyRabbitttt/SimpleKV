@@ -81,6 +81,23 @@ namespace xindb {
         return len;
     }
 
+    // 只是针对 uint32_t, 首先写 size ， 然后写 value
+    void PutLengthPrefixedSlice(std::string* dst, const Slice& value) {
+        PutVarint32(dst, value.size());
+        dst->append(value.data(), value.size());
+    }
+
+    // 从带有前缀 size 封装好的数据中读取出来 value 
+    bool GetLengthPrefixedSlice(Slice* input, Slice* result) {
+        uint32_t len;
+        if (GetVarint32(input, &len) && input->size() >= len) {
+            *result = Slice(input->data(), len);        // 获得了len长度的数据了
+            input->remove_prefix(len);
+            return true;
+        } else {
+            return false;                   // value 的size比较小？内部出现了错误
+        }
+    }
 
     //进行32-bit整数的解码操作，写到value中去,返回的是解码之后的指针的位置
     const char* GetVarint32PtrFallBack(const char* p, const char* limit, uint32_t* value) {
