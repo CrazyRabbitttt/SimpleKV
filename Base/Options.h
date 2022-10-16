@@ -31,6 +31,9 @@ struct Options {
     // const Comparator* comparator;
     const ByteWiseComparator* comparator;
 
+    // Write Buffer Size = 4M 
+    size_t write_buffer_size = 4 * 1024 * 1024;
+
     // 压缩的策略
     CompressType compression = kSnappyCompress;
 
@@ -51,6 +54,14 @@ struct ReadOptions {
     // 批量扫描就设置为 false
     bool fill_cache = true;
 };
+
+struct WriteOptions {
+  WriteOptions() = default;
+
+  bool sync = false;
+
+};
+
 
 
 

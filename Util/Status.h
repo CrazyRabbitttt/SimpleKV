@@ -79,7 +79,7 @@ private:
     static const char* CopyState(const char* s);
 
 
-    //如果状态是OK的话，那么state就是空的
+    // 如果状态是OK的话，那么state就是空的
     /*
         state[0, 3] = len of message
         state[4]    = code

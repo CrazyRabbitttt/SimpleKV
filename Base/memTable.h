@@ -31,6 +31,9 @@ class MemTable {
         assert(refs_ >= 0);
         if (refs_ <= 0) delete this;
     }
+
+    size_t ApproximateMemoryUsage();
+
  private:
     struct KeyComparator {
         const InternalKeyCom comparator;

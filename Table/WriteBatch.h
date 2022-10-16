@@ -2,6 +2,9 @@
 #define XINDB_TABLE_WRITEBATCH_H_
 
 #include <string>
+#include "Status.h"
+#include "memTable.h"
+#include "dbFormat.h"
 
 namespace xindb {
 

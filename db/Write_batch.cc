@@ -132,7 +132,7 @@ void WriteBatch::Append(const WriteBatch& source) {
     WriteBatchInternal::Append(this, &source);
 }
 
-// 设置一下需要插入到的 MemTable 中
+// 设置一下需要插入到的 MemTable 中, 将 batch 中的数据写到 对应的 MemTable 中
 Status WriteBatchInternal::InsertInto(const WriteBatch* batch, MemTable* memtable) {
     MemTableInsert inserter;
     inserter.sequence_ = WriteBatchInternal::Sequence(batch);

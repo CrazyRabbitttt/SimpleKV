@@ -5,7 +5,7 @@
 
 using namespace xindb;
 
-static Slice GetLengthPrefixedSlice(const char* data) {
+static Slice GetLengthPrefixedSlice1(const char* data) {
   uint32_t len;
   const char* p = data;
   p = GetVarint32Ptr(p, p + 5, &len);  // +5: we assume "p" is not corrupted
@@ -20,11 +20,15 @@ MemTable::~MemTable() {
     assert(refs_ == 0);
 }
 
+size_t MemTable::ApproximateMemoryUsage() {
+    return arena_.Memoryusage(); 
+}
+
 
 int MemTable::KeyComparator::operator()(const char* ptra, const char* ptrb) const {
     // 传入的是InternalKey?
-    Slice a = GetLengthPrefixedSlice(ptra);
-    Slice b = GetLengthPrefixedSlice(ptrb);
+    Slice a = GetLengthPrefixedSlice1(ptra);
+    Slice b = GetLengthPrefixedSlice1(ptrb);
     return comparator.Compare(a, b);
 }
 
@@ -73,7 +77,7 @@ bool MemTable::Get(const LookUpKey& key, std::string* value, Status* status) {
             const uint64_t tag = DecodeFixed64(key_ptr + key_len - 8);
             switch (static_cast<ValueType>(tag & 0xff)) {
                 case kTypeValue : {
-                    Slice v = GetLengthPrefixedSlice(key_ptr + key_len);        // 获得value
+                    Slice v = GetLengthPrefixedSlice1(key_ptr + key_len);        // 获得value
                     value->assign(v.data(), v.size());
                     return true;
                 }
