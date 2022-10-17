@@ -111,7 +111,6 @@ void WriteBatchInternal::SetSequence(WriteBatch* batch, SequencrNumber seq) {
     EncodeFixed64(&batch->rep_[0], seq);
 }
 
-
 void WriteBatch::Put(const Slice& key, const Slice& value) {
     // 首先设置好 seq， static 成员函数直接调用
     WriteBatchInternal::SetCount(this, WriteBatchInternal::Sequence(this) + 1);

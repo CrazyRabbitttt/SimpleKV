@@ -5,6 +5,7 @@
 #include "Status.h"
 #include "InterCom.h"
 #include "dbFormat.h"
+#include "iterator.h"
 
 namespace xindb {
 

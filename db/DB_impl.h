@@ -1,7 +1,7 @@
 #ifndef XINDB_DB_DBIMPL_H
 #define XINDB_DB_DBIMPL_H
 
-#include "db.h"
+#include "DB.h"
 #include <queue>
 #include "Mutex.h"
 #include "WriteBatch.h"
@@ -53,7 +53,8 @@ class DBImpl : public DB {
     MemTable* mem_;                     // Memtable 
     MemTable* imm_;                     // ImmMemTable
     std::deque<Writer*> writers_;       // 维护一个 writers 的队列
-
+    
+    PosixWritableFile* file_;          // posix writable file 
 };
 
 

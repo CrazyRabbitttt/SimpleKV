@@ -1,7 +1,9 @@
 
-#include "db_impl.h"
+#include "DB_impl.h"
 #include "MutexLock.h"
 #include "Status.h"
+#include "tableBuilder.h"
+#include "iterator.h"
 
 namespace xindb {
 
@@ -12,12 +14,14 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       background_work_finished_signal_(&mutex_),
       log_(nullptr),
       tmp_batch_(new WriteBatch)
-      {}
+      {
+        int fd = open(dbname.c_str(), O_RDWR);
+        file_ = new PosixWritableFile(dbname, fd);                              // 记得析构的时候 delete 掉
+      }
 
 DBImpl::~DBImpl() {
     delete tmp_batch_;
-    
-
+    delete file_;
 }
 
 
@@ -57,11 +61,12 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
 
 Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
+    Status s;
     // (1) init the write 
-    Writer w(&mutex_);
-    w.batch = batch;
-    w.sync  = option.sync;
-    w.done  = false; 
+    // Writer w(&mutex_);
+    // w.batch = batch;
+    // w.sync  = option.sync;
+    // w.done  = false; 
 
     // // (2) queuing the task 临界区
     // MutexLock lock(&mutex_);
@@ -81,11 +86,26 @@ Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
     status =  WriteBatchInternal::InsertInto(batch, mem_);
 
     // 将数据持久化到磁盘上面
+    // 1. 获得 MemTable's iterator 
+    Iterator* iter = mem_->NewIterator();
 
-    // Iterator* iter = mem_->
+    // 2. 创建 tablebuilder
 
+    TableBuilder* builder = new TableBuilder(options_, file_);
 
+    iter->SeekToFirst();        // 首先找到 MemTable 的第一个位置
+    
+    if (iter->Valid()) {        // 如果说是有数据的，直接遍历所有的数据好了
+        for (; iter->Valid(); iter->Next()) {
+            Slice key   = iter->key();
+            Slice value = iter->value();
+            printf("From Memtable: key[%s], value[%s]\n", key.data(), value.data()); 
+            builder->Add(key, value);
+        }
+    } 
+    s = builder->Finish();              // Finish build the sstable 
 
+    return s;
 }
 
 
