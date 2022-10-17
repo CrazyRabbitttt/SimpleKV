@@ -7,7 +7,7 @@ namespace xindb {
 
 class MutexLock {
  public:    
-    explicit MutexLock(Mutex* mutex)
+    explicit MutexLock(port::Mutex* mutex)
         : mutex_(mutex) {
             this->mutex_->Lock();
         }

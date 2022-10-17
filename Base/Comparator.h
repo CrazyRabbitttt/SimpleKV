@@ -35,6 +35,7 @@ class ByteWiseComparator : public Comparator{
     }
 
     int Compare(const Slice&a, const Slice& b) const override {
+        printf("这才是调用了Compare..\n");
         return a.compare(b);
     }
     

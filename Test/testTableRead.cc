@@ -51,10 +51,10 @@ void scan_by_table_iterator() {
 
 
 
-int main() {
-    printf("测试读取写入磁盘中的SST... Wish success\n");
-    scan_by_table_iterator();
+// int main() {
+//     printf("测试读取写入磁盘中的SST... Wish success\n");
+//     scan_by_table_iterator();
 
-    return 0;
-}
+//     return 0;
+// }
 

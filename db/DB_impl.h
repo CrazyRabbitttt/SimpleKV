@@ -23,6 +23,8 @@ class DBImpl : public DB {
 
     ~DBImpl() override;
 
+    Status Get(const ReadOptions& options, const Slice& key, std::string* value) override;
+
     Status Put(const WriteOptions&, const Slice& key, const Slice& value) override;
     
     Status Delete(const WriteOptions&, const Slice& key) override;
@@ -32,6 +34,7 @@ class DBImpl : public DB {
     Status BuildTable(const Options& options, WritableFile* file, Iterator* iter);
 
    //  (const Options& options, WritableFile* file)
+    Status showMemEntries();
 
 
  private:
@@ -53,8 +56,11 @@ class DBImpl : public DB {
     MemTable* mem_;                     // Memtable 
     MemTable* imm_;                     // ImmMemTable
     std::deque<Writer*> writers_;       // 维护一个 writers 的队列
-    
-    PosixWritableFile* file_;          // posix writable file 
+
+    const ByteWiseComparator* byte_com_;      // compare 策略
+    InternalKeyCom internalcom_;        // Internal Comparator
+
+    PosixWritableFile* file_;           // posix writable file 
 };
 
 

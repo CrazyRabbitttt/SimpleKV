@@ -7,13 +7,21 @@
 
 namespace xindb {
 
+// // const ByteWiseComparator* bytecom = new ByteWiseComparator();
+// // InternalKeyCom internalcom(bytecom);
+// // MemTable mem(internalcom);
+
+
 DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
-    : mem_(nullptr), 
+    : 
       imm_(nullptr),
       dbname_(dbname),
       background_work_finished_signal_(&mutex_),
       log_(nullptr),
-      tmp_batch_(new WriteBatch)
+      tmp_batch_(new WriteBatch),
+      byte_com_(new ByteWiseComparator()),
+      internalcom_(byte_com_),
+      mem_(new MemTable(internalcom_))
       {
         int fd = open(dbname.c_str(), O_RDWR);
         file_ = new PosixWritableFile(dbname, fd);                              // 记得析构的时候 delete 掉
@@ -22,6 +30,8 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
 DBImpl::~DBImpl() {
     delete tmp_batch_;
     delete file_;
+    delete byte_com_;
+    delete mem_;
 }
 
 
@@ -61,7 +71,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
 
 Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
-    Status s;
+    Status status;
     // (1) init the write 
     // Writer w(&mutex_);
     // w.batch = batch;
@@ -80,35 +90,66 @@ Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
 
     // (3) 
     // 写日志
-    Status status = log_->AddRecord(WriteBatchInternal::Contents(batch));
+    // Status status = log_->AddRecord(WriteBatchInternal::Contents(batch));
 
     // 写入到 MemTable 中
     status =  WriteBatchInternal::InsertInto(batch, mem_);
 
-    // 将数据持久化到磁盘上面
-    // 1. 获得 MemTable's iterator 
-    Iterator* iter = mem_->NewIterator();
-
-    // 2. 创建 tablebuilder
-
-    TableBuilder* builder = new TableBuilder(options_, file_);
-
-    iter->SeekToFirst();        // 首先找到 MemTable 的第一个位置
-    
-    if (iter->Valid()) {        // 如果说是有数据的，直接遍历所有的数据好了
-        for (; iter->Valid(); iter->Next()) {
-            Slice key   = iter->key();
-            Slice value = iter->value();
-            printf("From Memtable: key[%s], value[%s]\n", key.data(), value.data()); 
-            builder->Add(key, value);
-        }
-    } 
-    s = builder->Finish();              // Finish build the sstable 
-
-    return s;
+    return status;
 }
 
 
+// {
+//     // 将数据持久化到磁盘上面
+//     // 1. 获得 MemTable's iterator 
+//     Iterator* iter = mem_->NewIterator();
+
+//     // 2. 创建 tablebuilder
+
+//     TableBuilder* builder = new TableBuilder(options_, file_);
+
+//     iter->SeekToFirst();        // 首先找到 MemTable 的第一个位置
+    
+//     if (iter->Valid()) {        // 如果说是有数据的，直接遍历所有的数据好了
+//         for (; iter->Valid(); iter->Next()) {
+//             Slice key   = iter->key();
+//             Slice value = iter->value();
+//             printf("From Memtable: key[%s], value[%s]\n", key.data(), value.data()); 
+//             builder->Add(key, value);
+//         }
+//     } 
+//     s = builder->Finish();              // Finish build the sstable 
+
+// }
+
+// 遍历输出一下 memtable 中的数据，看看是否是正确的
+Status DBImpl::showMemEntries() {
+    // 1.获得 MemTable 的迭代器
+    Iterator* iter = mem_->NewIterator();
+
+    // 2.创建 tablebuilder
+    TableBuilder* builder = new TableBuilder(options_, file_);
+
+    iter->SeekToFirst();
+
+    if (iter->Valid()) {
+        for (; iter->Valid(); iter->Next()) {
+            printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
+        }
+    }
+    printf("Finish scan memtable...\n");
+    return Status::OK();
+}
+
+
+Status DBImpl::Get(const ReadOptions& options, const Slice& key, std::string* value) {
+    return Status::OK();
+}
+
+
+Status DBImpl::Delete(const WriteOptions&, const Slice& key) {
+    return Status::OK();
+}
 Status DBImpl::Put(const WriteOptions& option, const Slice& key, const Slice& value) {
     return DB::Put(option, key, value);
 }

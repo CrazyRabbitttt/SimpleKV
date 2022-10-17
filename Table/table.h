@@ -7,7 +7,7 @@
 #include "format.h"
 #include "Options.h"
 #include "block.h"
-#include "Iterator"
+#include "iterator"
 
 namespace xindb {
 
