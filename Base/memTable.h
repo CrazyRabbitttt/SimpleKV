@@ -8,6 +8,7 @@
 
 namespace xindb {
 
+class MemTableIterator;
 
 
 class MemTable {
@@ -34,7 +35,12 @@ class MemTable {
 
     size_t ApproximateMemoryUsage();
 
+    // 创建 memtable 的迭代器【算是对内部skiplist iterator的封装】
+    Iterator* NewIterator();        
+
  private:
+    friend class MemTableIterator;                  // 按理说应该是能够访问内部的 私有成员变量的
+    
     struct KeyComparator {
         const InternalKeyCom comparator;
         explicit KeyComparator(const InternalKeyCom& c) : comparator(c) {}

@@ -25,7 +25,6 @@
 ```
 
 
-
 ### 测试文件
 
 > - ***test_filter_block***: 测试 ***布隆过滤器*** 是否成功 【内存中】
@@ -33,6 +32,14 @@
 > - ***testTableReader:*** 测试 **读取上面写入的table**，然后迭代器遍历数据
 > - ***testblock***: 测试 **block的生成、迭代遍历等** 【内存中】
 > - ***testSkipList***: 测试 跳表是否成功 【内存中】
+
+
+### MemTableIterator 的设计
+
+> - ***MemTable*** 内部使用 **skiplist** 进行维护数据
+> - ***MemtableIterator*** 作为 **memtable** 的友元类出现，为了访问 **skiplist** 
+
+怎么创建 ***memtableiterator*** 呢？ **MemTable** 中有一个成员函数 `Iterator* NewIterator()` 用来创建本 **memtable** 的迭代器，传入 ***table_*** 生成迭代器类
 
 
 

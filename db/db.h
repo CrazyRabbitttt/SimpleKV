@@ -6,6 +6,7 @@
 #include "iterator.h"
 #include "WriteBatch.h"
 #include "Options.h"
+#include "Options.h"
 
 namespace xindb {
 
@@ -17,7 +18,7 @@ class DB {
 
     */
 
-   static Status Open(const Options& options, const std::string& name, DB** dbptr);
+    static Status Open(const Options& options, const std::string& name, DB** dbptr);
 
     DB() = default;
 

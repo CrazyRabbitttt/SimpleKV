@@ -5,6 +5,23 @@
 
 namespace xindb {
 
+DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
+    : mem_(nullptr), 
+      imm_(nullptr),
+      dbname_(dbname),
+      background_work_finished_signal_(&mutex_),
+      log_(nullptr),
+      tmp_batch_(new WriteBatch)
+      {}
+
+DBImpl::~DBImpl() {
+    delete tmp_batch_;
+    
+
+}
+
+
+
 struct DBImpl::Writer {
     explicit Writer(port::Mutex* mu)
         : batch(nullptr), sync(false), done(false), condv(mu)
@@ -39,8 +56,6 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 }
 
 
-
-
 Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
     // (1) init the write 
     Writer w(&mutex_);
@@ -64,6 +79,12 @@ Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
 
     // 写入到 MemTable 中
     status =  WriteBatchInternal::InsertInto(batch, mem_);
+
+    // 将数据持久化到磁盘上面
+
+    // Iterator* iter = mem_->
+
+
 
 }
 

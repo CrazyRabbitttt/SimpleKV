@@ -29,6 +29,9 @@ class DBImpl : public DB {
 
     Status Write(const WriteOptions& options, WriteBatch* updates) override;
 
+    Status BuildTable(const Options& options, WritableFile* file, Iterator* iter);
+
+   //  (const Options& options, WritableFile* file)
 
 
  private:
@@ -40,10 +43,10 @@ class DBImpl : public DB {
     WriteBatch* BuildBatchGroup(Writer** last_writer);
 
     port::Mutex mutex_;       // 维护并发写入的线程安全
-    port::CondVar condv_;
+   //  port::CondVar condv_;
     port::CondVar background_work_finished_signal_;   // if background thread finished write
     const Options options_;             // comparator = &internal.comparator
-
+    std::string dbname_;                // dbname 
     WriteBatch* tmp_batch_;
    //  log::Writer* log_;
     Log::Writer* log_;

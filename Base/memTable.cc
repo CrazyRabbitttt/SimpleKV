@@ -1,9 +1,11 @@
 #include "memTable.h"
 
 #include "Coding.h"
+#include "Status.h"
+#include "iterator.h"
 #include "InterCom.h"
 
-using namespace xindb;
+namespace xindb {
 
 static Slice GetLengthPrefixedSlice1(const char* data) {
   uint32_t len;
@@ -19,6 +21,46 @@ MemTable::MemTable(const InternalKeyCom& comparator)
 MemTable::~MemTable() {
     assert(refs_ == 0);
 }
+
+// 将 normal key压缩进去形成 internalKey ？
+static const char* EncodeKey(std::string* scratch, const Slice& target) {
+    scratch->clear();
+    PutVarint32(scratch, target.size());
+    scratch->append(target.data(), target.size());
+    return scratch->data();
+}
+
+
+// 用于帮助遍历 MemTable 的内容， 插入到 SSTable 中
+class MemTableIterator : public Iterator{
+ public:
+    explicit MemTableIterator(MemTable::Table* table)
+        : iter_(table) {}
+    
+    virtual bool Valid() const { return iter_.Valid(); }
+    virtual void Seek(const Slice& k) { iter_.Seek(EncodeKey(&tmp_, k));  }
+    virtual void SeekToFirst() { iter_.SeekForFirst(); } 
+    virtual void SeekToLast()  { iter_.SeekForLast();  }
+    virtual void Next()        { iter_.Next();         }
+    virtual void Prev()        { iter_.Prev();         }
+    virtual Slice key()  const { return GetLengthPrefixedSlice1(iter_.key()); }
+    virtual Slice value()const {
+        Slice key_slice = GetLengthPrefixedSlice1(iter_.key());
+        return GetLengthPrefixedSlice1(key_slice.data() + key_slice.size());
+    }
+    virtual Status status() const { return Status::OK(); }
+
+ private:
+    std::string tmp_;                           // For passing to EncodeKey 
+    MemTable::Table::Iterator iter_;            // MemTable 的内部迭代器类
+
+};
+
+// 给MemTable创建迭代器
+Iterator* MemTable::NewIterator() {
+    return new MemTableIterator(&table_);
+}
+
 
 size_t MemTable::ApproximateMemoryUsage() {
     return arena_.Memoryusage(); 
@@ -91,20 +133,5 @@ bool MemTable::Get(const LookUpKey& key, std::string* value, Status* status) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}   // namespace xindb
 
