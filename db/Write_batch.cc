@@ -31,6 +31,7 @@ namespace xindb {
 static const size_t kHeader = 12;
 
 WriteBatch::WriteBatch() {
+    WriteBatchInternal::SetSequence(this, 3);           // set sequence from zero 
     Clear();
 }
 
@@ -135,6 +136,7 @@ void WriteBatch::Append(const WriteBatch& source) {
 Status WriteBatchInternal::InsertInto(const WriteBatch* batch, MemTable* memtable) {
     MemTableInsert inserter;
     inserter.sequence_ = WriteBatchInternal::Sequence(batch);
+    printf("inserter sequence : %d\n", inserter.sequence_);
     inserter.mem_ = memtable;
     return batch->Iterate(&inserter);
 }

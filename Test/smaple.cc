@@ -21,17 +21,16 @@ int main() {
 
     std::string key1   = "key3";
     std::string value1 = "value3";
+
+    // std::string key2 = "DayDreamer";
+    // std::string real1 = "ShaoGuixin";
     Status status = db->Put(WriteOptions(), key, val_age);
-    assert(status.ok());
-
     status = db->Put(WriteOptions(), name, real);
-    assert(status.ok());
-
     status = db->Put(WriteOptions(), key1, value1);
-    // printf("put kv's into memtable...\n");
 
     printf("=======================\n");
     db->showMemEntries();
+    db->Persistent();
 
     
     delete db;

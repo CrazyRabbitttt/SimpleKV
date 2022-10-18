@@ -14,10 +14,8 @@ int InternalKeyCom::Compare(const Slice& akey, const Slice& bkey) const {
     // 1. UserKey升序
     // 2. Seq降序
     // 3. Type降序
-    printf("Debug:InternalKey Comapre: key[%s], value[%s]\n", akey.data(), bkey.data());
     // printf("The user's comparator name is :%s\n", user_com_->Name());
 
-    printf("...\n");
     // return -1;
     // int res = user_com_->Compare(ExtractUserKey(akey), ExtractUserKey(bkey));
     Slice a = ExtractUserKey(akey), b = ExtractUserKey(bkey);

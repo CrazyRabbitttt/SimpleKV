@@ -50,6 +50,7 @@ class WriteBatch {
 // helper class, help insert values to memtable 
 class MemTableInsert : public WriteBatch::Handler {
  public:
+ 
    SequencrNumber sequence_;
    MemTable* mem_;
 

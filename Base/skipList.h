@@ -236,7 +236,6 @@ int SkipList<Key, Comparator>::RandomHeight() {
 
 template<typename Key, class Comparator> 
 void SkipList<Key, Comparator>::Insert(const Key& key) {
-    printf("Begin insert one entry to memtable....\n");
     //初始化一下prev
     Node* prev[kMaxHeight];
 

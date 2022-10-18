@@ -70,6 +70,22 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 }
 
 
+ // 将数据进行持久化 dump 到磁盘上面去
+Status DBImpl::Persistent() {
+
+    TableBuilder* table_ = new TableBuilder(options_, file_);
+    Iterator* iter = mem_->NewIterator();           // get the iter of memtable 
+    iter->SeekToFirst();                            // run to the first position of memtable
+    for (; iter->Valid(); iter->Next()) {
+        table_->Add(iter->key(), iter->value());
+    }
+
+    Status status = table_->Finish();
+    printf("Finish dump memtable datas to SSTable\n");
+    return status;
+}
+
+
 Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
     Status status;
     // (1) init the write 
@@ -137,7 +153,6 @@ Status DBImpl::showMemEntries() {
             printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
         }
     }
-    printf("Finish scan memtable...\n");
     return Status::OK();
 }
 

@@ -15,9 +15,7 @@ inline Slice ExtractUserKey(const Slice& internal_key) {
 
 class InternalKeyCom : Comparator{
  public:
-    explicit InternalKeyCom(const Comparator* com) : user_com_(com) {
-        printf("创建internalKeyCom, user_com:[%s]\n", user_com_->Name());
-    }
+    explicit InternalKeyCom(const Comparator* com) : user_com_(com) {}
 
     const char* Name() const override;
 

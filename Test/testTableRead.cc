@@ -18,7 +18,8 @@ void scan_by_table_iterator() {
     options.block_restart_interval = 4;
     options.filter_policy = NewBloomFilterPolicy(10);
     Table* table = nullptr;
-    std::string filename("table_builder.data");
+    // std::string filename("table_builder.data");
+    std::string filename("XXXXXIN");
     int fd = open(filename.c_str(), O_RDWR);
     PosixRandomAccessFile file(filename, fd);
 
@@ -51,10 +52,10 @@ void scan_by_table_iterator() {
 
 
 
-// int main() {
-//     printf("测试读取写入磁盘中的SST... Wish success\n");
-//     scan_by_table_iterator();
+int main() {
+    printf("测试读取写入磁盘中的SST... Wish success\n");
+    scan_by_table_iterator();
 
-//     return 0;
-// }
+    return 0;
+}
 

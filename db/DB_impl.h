@@ -2,7 +2,10 @@
 #define XINDB_DB_DBIMPL_H
 
 #include "DB.h"
+
 #include <queue>
+#include <atomic>
+
 #include "Mutex.h"
 #include "WriteBatch.h"
 #include "WriteBatchInternal.h"
@@ -36,6 +39,8 @@ class DBImpl : public DB {
    //  (const Options& options, WritableFile* file)
     Status showMemEntries();
 
+    Status Persistent();         // 持久化数据到磁盘上面
+
 
  private:
     friend class DB;          // DB 作为接口能够直接的访问 DBImpl 的实现内容
@@ -44,8 +49,11 @@ class DBImpl : public DB {
     Status MakeRoomForWrite(bool force);     // 需要独占锁
     Status WriteLevel0Table(MemTable* mem);  // 写数据到SST【0层中】
     WriteBatch* BuildBatchGroup(Writer** last_writer);
+    
 
-    port::Mutex mutex_;       // 维护并发写入的线程安全
+
+    std::atomic_int sstNumber_;         // assign name of sstable, do not need sync method
+    port::Mutex mutex_;                 // 维护并发写入的线程安全
    //  port::CondVar condv_;
     port::CondVar background_work_finished_signal_;   // if background thread finished write
     const Options options_;             // comparator = &internal.comparator
