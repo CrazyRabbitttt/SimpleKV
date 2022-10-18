@@ -40,11 +40,13 @@ class WriteBatch {
     // 传入初始化好了的 memtableinserter 将 rep_ 中存储的 entry 写到 memtable 中
     Status Iterate(Handler* handler) const;
 
+    std::string getRep() { return rep_; }
+    
  private:
     // 帮助操作内部的数据，如 count & sequence number 
     friend class WriteBatchInternal;
     
-    std::string rep_;
+    std::string rep_;         
 };
 
 // helper class, help insert values to memtable 

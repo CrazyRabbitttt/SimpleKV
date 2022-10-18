@@ -20,8 +20,8 @@ struct Options {
 
     // number of keys between restart pointers for delta 
     // 大致是每个Group的size？ 多少个entry构建成为一个group, Restart 的距离
-    int block_restart_interval = 16;
-
+    // int block_restart_interval = 16;
+    int block_restart_interval = 4;                 // sample test, the interval assign as 4
     // SST 中 block_size 的大小
     size_t block_size = 4 * 1024;               
 
@@ -40,7 +40,7 @@ struct Options {
     // 极尽严格的检查，有一个数据entry不符合可能导致表打开失败
     bool paranoid_check = false;
 
-    const FilterPolicy* filter_policy = nullptr;
+    const FilterPolicy* filter_policy ;
 };
 
 

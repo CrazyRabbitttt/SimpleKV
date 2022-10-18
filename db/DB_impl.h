@@ -49,14 +49,12 @@ class DBImpl : public DB {
     Status MakeRoomForWrite(bool force);     // 需要独占锁
     Status WriteLevel0Table(MemTable* mem);  // 写数据到SST【0层中】
     WriteBatch* BuildBatchGroup(Writer** last_writer);
-    
-
 
     std::atomic_int sstNumber_;         // assign name of sstable, do not need sync method
     port::Mutex mutex_;                 // 维护并发写入的线程安全
    //  port::CondVar condv_;
     port::CondVar background_work_finished_signal_;   // if background thread finished write
-    const Options options_;             // comparator = &internal.comparator
+    const Options options_;             // 
     std::string dbname_;                // dbname 
     WriteBatch* tmp_batch_;
    //  log::Writer* log_;

@@ -51,12 +51,9 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         printf("[%c]", footer_input[i]);
     }
     if (!s.ok()) return s;
-    printf("running here 1...\n");
     Footer footer;
     s = footer.DecodeFrom(&footer_input);
-    printf("decode footer, status : %s\n", s.ToString().c_str());
     if (!s.ok()) return s;
-    printf("running here 2...\n");
 // ========================== 上面读取 Footer =================================
 // ========================== 下面读取Index Block =============================
 
@@ -66,7 +63,6 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         read_option.verify_checksums = true;
     }
     s = ReadBlock(file, read_option, footer.index_handle(), &index_block_contents);
-    printf("running here 3...\n");
     if (s.ok()) {
         // 目前已经是获取了 footer & index block 的内容了, 可以进行读取解析了呦
         Block* index_block = new Block(index_block_contents);
@@ -78,10 +74,8 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
         rep->index_block_ = index_block;
         rep->cache_id = 0;
         rep->filter_data_ = nullptr;
-        printf("running here 4...\n");
         *table = new Table(rep);
         (*table)->ReadMeta(footer);
-        printf("running here 5...\n");
     }
     return s;
 }
@@ -89,28 +83,22 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
 
 // 解析 Meta block 的内容
 void Table::ReadMeta(const Footer& footer) {
-    printf("running here 555..\n");
     ReadOptions read_options;
     // 严格的进行读取
     if (rep_->options_.paranoid_check) {
         read_options.verify_checksums = true;
     }   
-    printf("running here 6..\n");
     BlockContents contents;
     Status s = ReadBlock(rep_->file_, read_options, footer.metaindex_handle(), &contents);
     if (!s.ok()) {
         return ;
     }
-    printf("running here 7..\n");
     // block 就是辅助解析 block 的内容的类，内部有迭代器
     Block* meta = new Block(contents);
     Iterator* iter = meta->NewIterator(GetByteWiseComparator());
     std::string key = "filter.";
-    printf("running here 8..\n");
     // key.append(rep_->options_.filter_policy->Name());
-    printf("running here 9..\n");
     iter->Seek(key);                // 从 filter block 中找 "filter.xxx"
-    printf("running here 10..\n");
     if (iter->Valid() && iter->key() == Slice(key)) {
         ReadFilter(iter->value());
     }
@@ -149,7 +137,6 @@ void Table::ReadFilter(const Slice& filter_handle_value) {
 
     // 生成相应的 filter 
     rep_->filter_ = new FilterBlockReader(rep_->options_.filter_policy, block.data);
-    printf("running here 11...\n");
 }
 
 // convert index iterator's value[压缩过的 blockhandle] into corresponding block's iterator
@@ -186,7 +173,6 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options, const Slice&
 
 // Table 中创建二级迭代器的借口，内部调用 twoleveliterator
 Iterator* Table::NewIterator(const ReadOptions& options) const {
-    printf("开始要创建二级迭代器...\n");
     // pass the arguments table have to the function 
     return NewTwoLevelIterator(
         rep_->index_block_->NewIterator(rep_->options_.comparator),

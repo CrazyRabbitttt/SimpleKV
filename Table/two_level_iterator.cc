@@ -84,7 +84,6 @@ TwoLevelIterator::TwoLevelIterator(Iterator* index_iter, BlockFunction block_fun
       index_iter_(index_iter),
       data_iter_(nullptr) {
 
-        printf("twoleveliterator 的构造函数...\n");
       }
     
 TwoLevelIterator::~TwoLevelIterator() = default;
@@ -195,7 +194,6 @@ void TwoLevelIterator::SkipEmptyDataBlockBackward() {
 Iterator* NewTwoLevelIterator(Iterator* index_iter, 
                               BlockFunction block_function, void* arg,
                               const ReadOptions& options) {
-    printf("下面初始化一个新的 twoleveliterator\n");
     return new TwoLevelIterator(index_iter, block_function, arg, options);
 }
 

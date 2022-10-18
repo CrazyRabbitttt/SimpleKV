@@ -52,13 +52,10 @@ class PosixRandomAccessFile : public RandomAccessFile{
     // 具体的 Read 
     Status Read(uint64_t offset, size_t n, Slice* result, char* scratch) const override {
         int fd = fd_;   
-        printf("filename : %s\n", filename_.c_str());
         Status status;
         // 从offset的位置读取n字节数据写到 scratch 中
-        printf("Read from file, the offset : %d\n", offset);
         ssize_t read_size = ::pread(fd, scratch, n, static_cast<off_t>(offset));
         *result = Slice(scratch, (read_size < 0) ? 0 : read_size);
-        printf("Read result from file :[%s], len : %d\n", (char*)result->data(), result->size());
         if (read_size < 0) {
             status = PosixError(filename_, errno);
         }

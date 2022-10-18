@@ -44,12 +44,10 @@ void Footer::EncodeTo(std::string* dst) const {
 Status Footer::DecodeFrom(Slice* input) {
     // 1.我们首先解析魔数
     const char* magic_ptr = input->data() + kEncodedLen - 8;      // 魔数的起始位置
-    printf("magic_ptr : [%s]\n", magic_ptr);
     uint32_t Magic_Number_Low = DecodeFixed32(magic_ptr);
     uint32_t Magic_Number_Hig = DecodeFixed32(magic_ptr + 4);
     uint64_t Magic_Number = ((static_cast<uint64_t>(Magic_Number_Hig) << 32) |
                               (static_cast<uint64_t>(Magic_Number_Low))); 
-    printf("Magic number decoded : %lld, kMagicnum : %lld\n", (uint64_t)(Magic_Number), (uint64_t)(kTableMagicNumber));   
 
     if (Magic_Number != kTableMagicNumber) {
         return Status::Corruption("not an sstable(bad magic numer)");

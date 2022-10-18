@@ -19,14 +19,13 @@ void scan_by_table_iterator() {
     options.filter_policy = NewBloomFilterPolicy(10);
     Table* table = nullptr;
     // std::string filename("table_builder.data");
-    std::string filename("XXXXXIN");
+    std::string filename("table_builder.data");
     int fd = open(filename.c_str(), O_RDWR);
     PosixRandomAccessFile file(filename, fd);
 
     struct stat file_stat;
     stat(filename.c_str(), &file_stat);
 
-    std::cout << "target file's size : " << file_stat.st_size << std::endl;
     Status status = Table::Open(
         options,
         &file,
@@ -35,13 +34,17 @@ void scan_by_table_iterator() {
     );
 
 
-    std::cout << "leveldb::Table::Open status: "<< status.ToString() << std::endl;
     Iterator* iter = table->NewIterator(ReadOptions());
-    printf("生成twoiterator 成功\n");
-    iter->SeekToFirst();
 
+    Slice targetkey = "Zage";
+    iter->Seek(targetkey);
+
+    std::cout << "Seek key from sstable, " << targetkey.ToString() << " -> " << iter->value().ToString() << std::endl;
+
+    iter->SeekToFirst();
+    std::cout << std::endl;
     while (iter->Valid()) {
-        std::cout << iter->key().ToString() << "->" << iter->value().ToString() << std:: endl;
+        std::cout << iter->key().ToString() << "-> [" << iter->value().ToString() << "]" << std:: endl;
         iter->Next();
     }
 
@@ -52,10 +55,9 @@ void scan_by_table_iterator() {
 
 
 
-int main() {
-    printf("测试读取写入磁盘中的SST... Wish success\n");
-    scan_by_table_iterator();
+// int main() {
+//     scan_by_table_iterator();
 
-    return 0;
-}
+//     return 0;
+// }
 

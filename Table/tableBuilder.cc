@@ -81,8 +81,6 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     Rep* r = rep_;
     assert(!r->closed_);
     if (!ok()) return;
-
-    printf("the numentries is %d\n", (int)r->num_entries_);
     if (r->num_entries_ > 0) {
         // Key 应该是升序的
         assert(r->options_.comparator->Compare(key, Slice(r->last_key_)) > 0);
@@ -189,11 +187,6 @@ void TableBuilder::WritaRawBlock(const Slice& block_contents, CompressType type,
         trailter[0] = type;
         uint32_t crc = crc32(block_contents.data(), block_contents.size());  
         EncodeFixed32(trailter + 1, crc);
-        printf("crc check sum :");
-        for (int i = 1; i <= 4; i++) {
-            printf("%d ", trailter[i]);
-        }
-        printf("\n");
         r->status_ = r->file_->Append(Slice(trailter, kBlockTrailerSize));  
         if (r->status_.ok()) {
             r->offset_ += block_contents.size() + kBlockTrailerSize;  // block 的 offset, 

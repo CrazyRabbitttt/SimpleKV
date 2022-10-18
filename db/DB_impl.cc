@@ -1,9 +1,18 @@
 
 #include "DB_impl.h"
+
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string>
+
 #include "MutexLock.h"
+#include "Coding.h"
 #include "Status.h"
+#include "BloomFilter.h"
 #include "tableBuilder.h"
 #include "iterator.h"
+#include "PosixEnv.h"
+#include "table.h"
 
 namespace xindb {
 
@@ -15,7 +24,8 @@ namespace xindb {
 DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
     : 
       imm_(nullptr),
-      dbname_(dbname),
+      dbname_(std::move(dbname)),
+      options_(raw_options),
       background_work_finished_signal_(&mutex_),
       log_(nullptr),
       tmp_batch_(new WriteBatch),
@@ -157,12 +167,48 @@ Status DBImpl::showMemEntries() {
 }
 
 
+
 Status DBImpl::Get(const ReadOptions& options, const Slice& key, std::string* value) {
+    // 从 Table 中 Get value出来
+    // options_.block_restart_interval = 4;
+    // options_.filter_policy = NewBloomFilterPolicy(10);
+    Table* table = nullptr;
+    std::string filename = "table_builder.data";
+
+    int fd = open(filename.c_str(), O_RDWR);
+    PosixRandomAccessFile file(filename, fd);
+
+    struct stat file_stat;
+    stat(filename.c_str(), &file_stat);
+
+
+    Status status = Table::Open(
+        options_,
+        &file,
+        file_stat.st_size,
+        &table
+    );
+
+    Iterator* iter = table->NewIterator(options);
+    // iter->SeekToFirst();                    // find the first entry of SSTable
+    // while (iter->Valid()) {
+    //     std::cout << "From SSTable : " << iter->key().ToString() << "->" << iter->value().ToString() << std:: endl;        
+    //     iter->Next();
+    // }
+
+    iter->Seek(key);        // now the 
+    std::string tmp(iter->value().data());
+    *value = std::move(tmp);
+    std::cout << "Seeked value : " << *value << std::endl;
+    delete iter;
+    delete table;
     return Status::OK();
 }
 
 
 Status DBImpl::Delete(const WriteOptions&, const Slice& key) {
+    WriteBatch batch;
+
     return Status::OK();
 }
 Status DBImpl::Put(const WriteOptions& option, const Slice& key, const Slice& value) {
@@ -175,6 +221,14 @@ Status DB::Put(const WriteOptions& option, const Slice& key, const Slice& value)
     batch.Put(key, value);
     return Write(option, &batch);
 }
+
+
+Status DB::Delete(const WriteOptions& opt, const Slice& key) {
+    WriteBatch batch;
+    batch.Delete(key);
+    return Write(opt, &batch);
+}
+
 
 // 创建 batch group
 WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
@@ -218,6 +272,8 @@ WriteBatch* DBImpl::BuildBatchGroup(Writer** last_writer) {
     }
     return result;
 }
+
+// void DBImpl::void SetOptionsfilter(const FilterPolicy*);
 
 
 }   // namespace xindb 

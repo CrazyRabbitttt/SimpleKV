@@ -34,6 +34,13 @@ using namespace xindb;
 //     table_builder.Add("sybaidu", "liyanhong");
 //     table_builder.Add("szbaitecent", "mahuateng");
 
+
+//     for (int i = 0; i < 10; i++) {
+//         table_builder.Add(Slice(std::string("zzkey") + std::to_string(i)), Slice(std::string("value") + std::to_string(i)));
+//     }
+
+
+
 //     // 70 bytes
 //     Status status = table_builder.Finish();
 

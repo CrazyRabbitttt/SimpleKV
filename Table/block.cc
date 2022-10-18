@@ -91,7 +91,6 @@ class Block::Iter : public Iterator {
          current_(restarts_), 
          restart_index_(num_restarts_) 
         {
-            printf("Block::Iter's 构造函数..\n");
             assert(num_restarts_ > 0);
         }
 
@@ -180,7 +179,6 @@ class Block::Iter : public Iterator {
 
     // 查找第一条数据，index 标记为1就好了
     void SeekToFirst() override {
-        printf("index block's seek for first\n");
         SeekToRestartPoint(0);
         ParseNextKey();
     }
@@ -294,7 +292,6 @@ class Block::Iter : public Iterator {
 
 
 Iterator* Block::NewIterator(const Comparator* comparator) {
-    printf("生成block的迭代器...\n");
     if (size_ < sizeof(uint32_t)) {
         printf("bad block contents");
     }

@@ -16,6 +16,8 @@ class Block;
 class BlockHandle;
 class RandomAccessFile;
 
+
+// Help calss to read data from sstable 
 class Table {
 
  public:
