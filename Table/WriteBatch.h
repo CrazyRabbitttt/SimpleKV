@@ -59,10 +59,12 @@ class MemTableInsert : public WriteBatch::Handler {
    // 前面已经是将 memtable 同 writebatch 相联系起来， 调用对应的 memtable 插入数据的接口
    void Put(const Slice& key, const Slice& value) override {
       mem_->Add(sequence_, kTypeValue, key, value);
+      printf("WritBatch::MemtableInsert : insert into Memtable, sequence:%d\n", sequence_);
       sequence_++;
    }
 
    void Delete(const Slice& key) override {
+      printf("MemTableInsert::Delete value, sequence number is %d\n", sequence_);
       mem_->Add(sequence_, kTypeDeletion, key, Slice());    // null value 
       sequence_++;
    }

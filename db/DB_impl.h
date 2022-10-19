@@ -7,6 +7,7 @@
 #include <atomic>
 
 #include "Mutex.h"
+#include "dbFormat.h"
 #include "WriteBatch.h"
 #include "WriteBatchInternal.h"
 #include "Log_writer.h"
@@ -62,11 +63,11 @@ class DBImpl : public DB {
     MemTable* mem_;                     // Memtable 
     MemTable* imm_;                     // ImmMemTable
     std::deque<Writer*> writers_;       // 维护一个 writers 的队列
-
     const ByteWiseComparator* byte_com_;      // compare 策略
     InternalKeyCom internalcom_;        // Internal Comparator
-
     PosixWritableFile* file_;           // posix writable file 
+    SequencrNumber sequence_;           // Use DBImpl to control the version 
+
 };
 
 

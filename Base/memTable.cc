@@ -79,6 +79,7 @@ void MemTable::Add(SequencrNumber seq, ValueType type, const Slice& key, const S
     // 将这些的参数传进来，然后插入到SkipList中去
     // key_size, key_bytes, tag, value_size, value_bytes
 
+    // printf("Memtable insert, seq:[%d] type:[%d] key:[%s] value:[%s]\n", seq, type, key.data(), value.data());
     size_t key_size   = key.size();
     size_t value_size = value.size();
     size_t internal_key_size = key_size + 8;            // 8是固定格式tag的大小

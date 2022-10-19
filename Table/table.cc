@@ -47,9 +47,7 @@ Status Table::Open(const Options& options, RandomAccessFile* file,
     Slice footer_input;         // 最终的读取到的内容写到这里, fixed 48 bytes
 
     Status s = file->Read(size - Footer::kEncodedLen, Footer::kEncodedLen, &footer_input, footer_space);
-    for (int i = 0; i < footer_input.size(); i++) {
-        printf("[%c]", footer_input[i]);
-    }
+
     if (!s.ok()) return s;
     Footer footer;
     s = footer.DecodeFrom(&footer_input);

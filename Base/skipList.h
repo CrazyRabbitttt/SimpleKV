@@ -156,8 +156,6 @@ inline void SkipList<Key, Comparator>::Iterator::SeekForLast() {
 }
 
 
-
-
 template<typename Key, class Comparator> 
 struct SkipList<Key, Comparator>::Node {
     explicit Node(const Key& k) :key(k) {}
@@ -232,6 +230,7 @@ int SkipList<Key, Comparator>::RandomHeight() {
     assert(height <= kMaxHeight);
     return height;
 }
+
 
 
 template<typename Key, class Comparator> 

@@ -31,7 +31,8 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       tmp_batch_(new WriteBatch),
       byte_com_(new ByteWiseComparator()),
       internalcom_(byte_com_),
-      mem_(new MemTable(internalcom_))
+      mem_(new MemTable(internalcom_)),
+      sequence_(1)
       {
         int fd = open(dbname.c_str(), O_RDWR);
         file_ = new PosixWritableFile(dbname, fd);                              // 记得析构的时候 delete 掉
@@ -153,16 +154,19 @@ Status DBImpl::showMemEntries() {
     // 1.获得 MemTable 的迭代器
     Iterator* iter = mem_->NewIterator();
 
-    // 2.创建 tablebuilder
-    TableBuilder* builder = new TableBuilder(options_, file_);
-
     iter->SeekToFirst();
 
-    if (iter->Valid()) {
-        for (; iter->Valid(); iter->Next()) {
-            printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
+    for (int i = 0; i < 8; i++) {
+        iter->Seek(Slice(std::string("key") + std::to_string(i)));
+        if (iter->Valid()) {
+            printf("Seek values in memtable :  [%s]->[%s]\n", iter->key().data(), iter->value().data());
         }
     }
+    // if (iter->Valid()) {
+    //     for (; iter->Valid(); iter->Next()) {
+    //         printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
+    //     }
+    // }
     return Status::OK();
 }
 
@@ -173,7 +177,7 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key, std::string* va
     // options_.block_restart_interval = 4;
     // options_.filter_policy = NewBloomFilterPolicy(10);
     Table* table = nullptr;
-    std::string filename = "table_builder.data";
+    std::string filename = "BING";
 
     int fd = open(filename.c_str(), O_RDWR);
     PosixRandomAccessFile file(filename, fd);
@@ -199,20 +203,23 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key, std::string* va
     iter->Seek(key);        // now the 
     std::string tmp(iter->value().data());
     *value = std::move(tmp);
-    std::cout << "Seeked value : " << *value << std::endl;
     delete iter;
     delete table;
     return Status::OK();
 }
 
 
-Status DBImpl::Delete(const WriteOptions&, const Slice& key) {
+Status DBImpl::Delete(const WriteOptions& option, const Slice& key) {
     WriteBatch batch;
-
-    return Status::OK();
+    WriteBatchInternal::SetSequence(&batch, sequence_++);
+    batch.Delete(key);
+    return Write(option, &batch);
 }
 Status DBImpl::Put(const WriteOptions& option, const Slice& key, const Slice& value) {
-    return DB::Put(option, key, value);
+    WriteBatch batch;
+    // WriteBatchInternal::SetSequence(&batch, sequence_++);             // 用DBIpml自己进行 sequence 的控制
+    batch.Put(key, value);
+    return Write(option, &batch);
 }
 
 
