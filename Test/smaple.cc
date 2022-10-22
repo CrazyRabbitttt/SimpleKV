@@ -15,69 +15,61 @@ using namespace xindb;
 
 
 void sample_write_to_sst() {
-        // xindb::DB* db = nullptr;
-    
+    Status status;
     xindb::Options options;
     options.filter_policy = NewBloomFilterPolicy(10);
-    options.block_restart_interval = 4;
+    options.block_restart_interval = 10;
     std::string dbname = "BING";
     DBImpl* db = new DBImpl(options, dbname);
 
-    std::string key  = "Zage";
-    std::string val_age = "20008";
+    std::string key = "age";
+    std::string this_year_value = "20";
+    std::string next_year_value = "21";
+    std::string db_value;
 
-    std::string name = "DayDreamer";
-    std::string real = "shaoguixin";
+    // 写入 Key, Value
+    status = db->Put(WriteOptions(), key, this_year_value);
+    assert(status.ok());
 
+    status = db->Put(WriteOptions(), "name", "Jeff Dean");
+    status = db->Put(WriteOptions(), "company", "Google");
 
-    Status status = db->Put(WriteOptions(), key, val_age);
-    status = db->Put(WriteOptions(), name, real);
+    // 删除Key|Value, 会在内存中就实现了删除
+    status = db->Delete(WriteOptions(), "company");
 
-    std::string tmpkey   = "key";
-    std::string tmpvalue = "value";
-    for (int i = 0; i < 9; i++) {
-        status = db->Put(WriteOptions(), Slice(tmpkey + std::to_string(i)), Slice(tmpvalue + std::to_string(i)));
-    }
-
-    status = db->Delete(WriteOptions(), Slice(std::string("key5")));
-
-
-    printf("=======================\n");
     db->showMemEntries();
     db->Persistent();
     delete db;
 }
 
 
+
 void sample_read_from_sst() {
     Options options;
-    options.block_restart_interval = 4;
+    options.block_restart_interval = 10;
     options.filter_policy = NewBloomFilterPolicy(10);               // 布隆过滤器
 
     std::string dbname = "BING";
     DBImpl* db = new DBImpl(options, dbname);
     
-    std::string key  = "Zage";
-    std::string val_age;
-    db->Get(ReadOptions(), key, &val_age);
-    std::cout << "Seek value from sstable, should be 20008, Real is [" << val_age << "]\n";
 
-    
-    for (int i = 24; i < 28; i++) {
-        std::string target_value;
-        std::string search_key = std::string("key") + std::to_string(i);
-        db->Get(ReadOptions(), Slice(search_key), &target_value);
+    std::string tmp_value;
+    db->Get(ReadOptions(), "age", &tmp_value);
+    std::cout << "Seek value from sstable, should be [20], Real is [" << tmp_value << "]\n";
 
-        std::cout << "Seek value from sstable ";
-        printf("[%s] -> [%s]\n", search_key.data(), target_value.data());
-    }
+    db->Get(ReadOptions(), "name", &tmp_value);
+    std::cout << "Seek value from sstable, should be [Jeff Dean], Real is [" << tmp_value << "]\n";
+
+    db->Get(ReadOptions(), "company", &tmp_value);
+    std::cout << "Seek value from sstable, should be nil, Real is [["    << tmp_value << "]\n";
     return ;
 }
 
 int main() {
 
     sample_write_to_sst();
-    // sample_read_from_sst();
+    std::cout << "=========== Read From SSTable =============\n";
+    sample_read_from_sst();
     
     return 0;
 }

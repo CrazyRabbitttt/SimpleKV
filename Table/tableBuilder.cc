@@ -82,7 +82,6 @@ void TableBuilder::Add(const Slice& key, const Slice& value) {
     assert(!r->closed_);
     if (!ok()) return;
     if (r->num_entries_ > 0) {
-        // Key 应该是升序的
         assert(r->options_.comparator->Compare(key, Slice(r->last_key_)) > 0);
     } 
     // ============= IndexBlock 的写入 =================
@@ -216,7 +215,7 @@ Status TableBuilder::Finish() {
         if (r->filter_block_ != nullptr) {
             // Key <====> handle 
             std::string key = "filter.";
-            printf("Write block, the filter policy name : %s\n", r->options_.filter_policy->Name());
+            printf("Write MetaBlock, the filter policy name : [%s]\n", r->options_.filter_policy->Name());
             key.append(r->options_.filter_policy->Name());
 
             std::string handle_encode;
@@ -248,8 +247,6 @@ Status TableBuilder::Finish() {
         footer.set_index_handle(indexblock_handle);
         std::string footer_encoding;            // 将 handle 数据编码写进字符串中
         footer.EncodeTo(&footer_encoding);
-        // footer_encoding.append("123456789012345678901234567890123456789012345678");
-        // footer_encoding.append("12345678");
         r->status_ = r->file_->Append(footer_encoding);
         if (r->status_.ok()) {
             r->offset_ += footer_encoding.size();

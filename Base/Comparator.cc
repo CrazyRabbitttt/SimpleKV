@@ -26,7 +26,7 @@ void ByteWiseComparator::FindShortestSeparator(std::string* start, const Slice& 
 void ByteWiseComparator::FindShortSuccessor(std::string* key) const  {
         //Find first 
         size_t n = key->size();
-        for (int i = 0; i < n; i++) {
+        for (size_t i = 0; i < n; i++) {
             const uint8_t byte = (*key)[i];
             if (byte != static_cast<uint8_t>(0xff)) {
                 (*key)[i] = byte + 1;

@@ -89,12 +89,6 @@ Status WriteBatch::Iterate(Handler* handler) const {
 }
 
 
-// Status WriteBatch::Iterate(Handler* handler) const {
-
-// }
-
-
-
 void WriteBatchInternal::SetCount(WriteBatch* batch, int n) {
     EncodeFixed32(&batch->rep_[8], n);
 }
@@ -135,7 +129,7 @@ void WriteBatch::Append(const WriteBatch& source) {
 Status WriteBatchInternal::InsertInto(const WriteBatch* batch, MemTable* memtable) {
     MemTableInsert inserter;
     inserter.sequence_ = WriteBatchInternal::Sequence(batch);
-    printf("WriInternal::Insertinto : inserter sequence : %d\n", inserter.sequence_);
+    // printf("WriInternal::Insertinto : inserter sequence : %d\n", inserter.sequence_);
     inserter.mem_ = memtable;
     // WriteBatchInternal::SetSequence(batch, Sequence(batch) + 1);
     return batch->Iterate(&inserter);
@@ -144,7 +138,6 @@ Status WriteBatchInternal::InsertInto(const WriteBatch* batch, MemTable* memtabl
 
 void WriteBatchInternal::SetContents(WriteBatch* batch, const Slice& contents) {
     assert(contents.size() >= kHeader);
-    // batch->rep_.assign(contents.data(), contents.size());
     batch->rep_.assign(contents.data(), contents.size());
 }
 

@@ -107,7 +107,7 @@ inline const char* GetVarint32Ptr(const char* p, const char* limit, uint32_t* va
 
     if (p < limit) {
       uint32_t result = *(reinterpret_cast<const uint8_t*>(p));
-      if ((result & 128) == 0) {    //less than 128
+      if ((result & 128) == 0) {    // less than 128
           *value = result;
           return p + 1;
       }

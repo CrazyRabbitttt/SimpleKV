@@ -65,7 +65,7 @@ class Slice {
 };
 
 inline bool operator==(const Slice& x, const Slice& y) {
-    return (x.size() == y.size() && memcmp(x.data(), y.data(), x.size()) == 0);
+    return ((x.size() == y.size()) && (memcmp(x.data(), y.data(), x.size()) == 0));
 }
 
 inline int Slice::compare(const Slice& b) const {

@@ -23,15 +23,15 @@ namespace xindb {
 
 DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
     : 
-      imm_(nullptr),
-      dbname_(std::move(dbname)),
-      options_(raw_options),
       background_work_finished_signal_(&mutex_),
-      log_(nullptr),
+      options_(raw_options),
+      dbname_(std::move(dbname)),
       tmp_batch_(new WriteBatch),
+      log_(nullptr),
+      mem_(new MemTable(internalcom_)), 
+      imm_(nullptr),
       byte_com_(new ByteWiseComparator()),
       internalcom_(byte_com_),
-      mem_(new MemTable(internalcom_)),
       sequence_(1)
       {
         int fd = open(dbname.c_str(), O_RDWR);
@@ -63,7 +63,7 @@ struct DBImpl::Writer {
 
 
 Status DBImpl::MakeRoomForWrite(bool force) {
-    bool allow_delay = !force;
+    // bool allow_delay = !force;
     Status s;
     while (true) {
         // 判断 memtable 中的数据是否是达到了既定的数据
@@ -83,16 +83,25 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
  // 将数据进行持久化 dump 到磁盘上面去
 Status DBImpl::Persistent() {
-
     TableBuilder* table_ = new TableBuilder(options_, file_);
     Iterator* iter = mem_->NewIterator();           // get the iter of memtable 
-    iter->SeekToFirst();                            // run to the first position of memtable
+    iter->SeekToFirst();                            // run to the first position of memtable 
+    // Slice pre_key = "dytez.!@#$%#&*#-="; 
     for (; iter->Valid(); iter->Next()) {
+        // if (pre_key.size() == iter->key().size() && memcmp(pre_key.data(), iter->key().data(), pre_key.size()) == 0) {
+        //     printf("重复的key插入，跳过\n");
+        //     continue;           // 不能将重复的数据刷新到磁盘上面
+        // } else {
+        //     printf("Key 是不重复的，能够直接插入\n");
+        // }
+        // printf("The key to add : [%s]\n", iter->key());
         table_->Add(iter->key(), iter->value());
+        // pre_key = iter->key();
     }
 
     Status status = table_->Finish();
-    printf("Finish dump memtable datas to SSTable\n");
+    delete iter;
+    delete table_;
     return status;
 }
 
@@ -126,28 +135,6 @@ Status DBImpl::Write(const WriteOptions& option, WriteBatch* batch) {
 }
 
 
-// {
-//     // 将数据持久化到磁盘上面
-//     // 1. 获得 MemTable's iterator 
-//     Iterator* iter = mem_->NewIterator();
-
-//     // 2. 创建 tablebuilder
-
-//     TableBuilder* builder = new TableBuilder(options_, file_);
-
-//     iter->SeekToFirst();        // 首先找到 MemTable 的第一个位置
-    
-//     if (iter->Valid()) {        // 如果说是有数据的，直接遍历所有的数据好了
-//         for (; iter->Valid(); iter->Next()) {
-//             Slice key   = iter->key();
-//             Slice value = iter->value();
-//             printf("From Memtable: key[%s], value[%s]\n", key.data(), value.data()); 
-//             builder->Add(key, value);
-//         }
-//     } 
-//     s = builder->Finish();              // Finish build the sstable 
-
-// }
 
 // 遍历输出一下 memtable 中的数据，看看是否是正确的
 Status DBImpl::showMemEntries() {
@@ -155,22 +142,14 @@ Status DBImpl::showMemEntries() {
     Iterator* iter = mem_->NewIterator();
 
     iter->SeekToFirst();
-
-    for (int i = 0; i < 8; i++) {
-        iter->Seek(Slice(std::string("key") + std::to_string(i)));
-        if (iter->Valid()) {
-            printf("Seek values in memtable :  [%s]->[%s]\n", iter->key().data(), iter->value().data());
+    if (iter->Valid()) {
+        for (; iter->Valid(); iter->Next()) {
+            printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
         }
     }
-    // if (iter->Valid()) {
-    //     for (; iter->Valid(); iter->Next()) {
-    //         printf("From MemTable: [%s]->[%s]\n", iter->key().data(), iter->value().data());
-    //     }
-    // }
+    delete iter;
     return Status::OK();
 }
-
-
 
 Status DBImpl::Get(const ReadOptions& options, const Slice& key, std::string* value) {
     // 从 Table 中 Get value出来
@@ -217,7 +196,7 @@ Status DBImpl::Delete(const WriteOptions& option, const Slice& key) {
 }
 Status DBImpl::Put(const WriteOptions& option, const Slice& key, const Slice& value) {
     WriteBatch batch;
-    // WriteBatchInternal::SetSequence(&batch, sequence_++);             // 用DBIpml自己进行 sequence 的控制
+    WriteBatchInternal::SetSequence(&batch, sequence_++);             // 用DBIpml自己进行 sequence 的控制
     batch.Put(key, value);
     return Write(option, &batch);
 }

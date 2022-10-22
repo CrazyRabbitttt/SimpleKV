@@ -15,7 +15,7 @@ BlockBuilder::BlockBuilder(const Options* options)
 
 Slice BlockBuilder::Finish() {
     // 结束了key value 的插入，restart代表着索引啥的，插入进去
-    for (int i = 0; i < restarts_.size(); i++) {
+    for (size_t i = 0; i < restarts_.size(); i++) {
         PutFixed32(&buffer_, restarts_[i]);
     }
     PutFixed32(&buffer_, restarts_.size());     // 这样就能够确认首个restart的位置

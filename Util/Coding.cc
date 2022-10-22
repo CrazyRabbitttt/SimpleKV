@@ -87,6 +87,17 @@ namespace xindb {
         dst->append(value.data(), value.size());
     }
 
+    const char* GetLengthPrefixedSlice(const char* p, const char* limit,
+                                   Slice* result) {
+        uint32_t len;
+        p = GetVarint32Ptr(p, limit, &len);
+        if (p == nullptr) return nullptr;
+        if (p + len > limit) return nullptr;
+        *result = Slice(p, len);
+        return p + len;
+    }
+
+
     // 从带有前缀 size 封装好的数据中读取出来 value 
     bool GetLengthPrefixedSlice(Slice* input, Slice* result) {
         uint32_t len;
@@ -106,7 +117,7 @@ namespace xindb {
         for (uint32_t shift = 0; shift <= 28 && p < limit; shift += 7) {
             uint32_t byte = *(reinterpret_cast<const uint8_t*>(p));     //获取到一个字节的数据，按照uint8的方式解读
             p++;
-            if (byte & (1 << 7)) {
+            if (byte & (128)) {     //128 == 1 << 7
                 //the largest bit is 1, means more 
                 result |= ((byte & 127) << shift);      //去掉最高位置的1
             } else {        

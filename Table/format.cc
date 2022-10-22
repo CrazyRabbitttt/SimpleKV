@@ -36,7 +36,7 @@ void Footer::EncodeTo(std::string* dst) const {
     // 3.MagicNumber
     PutFixed32(dst, static_cast<uint32_t>(kTableMagicNumber & 0xffffffffu));
     PutFixed32(dst, static_cast<uint32_t>(kTableMagicNumber >> 32));
-    assert(originsize + kEncodedLen == dst->size());
+    assert((size_t)(originsize + kEncodedLen) == (size_t)dst->size());
     (void)originsize;                      // 清除掉编译时Warning 
 }
 
